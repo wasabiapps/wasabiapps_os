@@ -1,0 +1,127 @@
+{
+  "meta": {
+    "title": "Сообщество WasabiApps",
+    "description": "Новости, обновления, фото и видео от команды",
+    "adminPassword": "wasabi2026"
+  },
+  "posts": [
+    {
+      "id": 1,
+      "author": "WasabiApps",
+      "avatar": "🎮",
+      "date": "2026-09-20T10:00:00",
+      "type": "text",
+      "title": "Запуск сообщества!",
+      "text": "Мы открыли раздел «Сообщество». Здесь будем публиковать новости, обновления каталога, фото и видео с мероприятий.",
+      "media": "",
+      "tags": ["новости", "запуск"],
+      "likes": 24,
+      "comments": [
+        { "author": "Иван", "text": "Отличная идея! 🎉" },
+        { "author": "Мария", "text": "Ждём обзоров!" }
+      ]
+    },
+    {
+      "id": 2,
+      "author": "WasabiApps",
+      "avatar": "🎮",
+      "date": "2026-09-22T14:30:00",
+      "type": "video",
+      "title": "Обзор школы «Музыка-внутри»",
+      "text": "Свежий обзор проекта: как устроена платформа, какие инструменты доступны и как начать заниматься.",
+      "media": "https://runtime.video.cloud.yandex.net/player/video/vplvuxklyrli5qpgmi7h?autoplay=0&mute=0",
+      "tags": ["обзор", "музыка", "видео"],
+      "likes": 41,
+      "comments": []
+    },
+    {
+      "id": 4,
+      "author": "WasabiApps",
+      "avatar": "🎮",
+      "date": "2026-09-25T12:00:00",
+      "type": "poll",
+      "title": "Какой раздел вам интереснее?",
+      "text": "Помогите нам понять, что развивать в первую очередь.",
+      "media": "",
+      "tags": ["опрос"],
+      "poll": {
+        "options": [
+          { "text": "Приложения", "votes": 12 },
+          { "text": "Книги", "votes": 7 },
+          { "text": "Музыка и подкасты", "votes": 18 },
+          { "text": "Обзоры и короткие видео", "votes": 9 }
+        ]
+      },
+      "likes": 15,
+      "comments": []
+    },
+    {
+      "id": 5,
+      "author": "WasabiApps",
+      "avatar": "🎮",
+      "date": "2026-09-26T10:00:00",
+      "type": "photo",
+      "title": "Картинка из Pinterest",
+      "text": "Просто фото.",
+      "media": "https://i.pinimg.com/originals/99/6c/3e/996c3e1fe2373dd15d2b35d3b60c39f8.jpg",
+      "tags": ["фото"],
+      "likes": 0,
+      "comments": []
+    },
+    {
+      "id": 6,
+      "author": "WasabiApps",
+      "avatar": "🎮",
+      "date": "2026-09-27T10:00:00",
+      "type": "video",
+      "title": "Обычный RuTube-ролик",
+      "text": "Плеер с автозапуском отключён, звук включён.",
+      "media": "https://runtime.video.cloud.yandex.net/player/video/vplv7npfy5k3tj3taylb?autoplay=0&mute=0",
+      "tags": ["видео"],
+      "likes": 0,
+      "comments": []
+    },
+    {
+      "id": 7,
+      "author": "WasabiApps",
+      "avatar": "🎮",
+      "date": "2026-09-27T11:00:00",
+      "type": "video",
+      "title": "RuTube без звука, с автозапуском",
+      "text": "Как фоновая заставка в ленте.",
+      "media": "https://runtime.video.cloud.yandex.net/player/video/vplvcd3mroip6pevtd3j?autoplay=0&mute=0",
+      "tags": ["видео"],
+      "likes": 0,
+      "comments": []
+    },
+    {
+      "id": 8,
+      "author": "WasabiApps",
+      "avatar": "🎮",
+      "date": "2026-09-27T12:00:00",
+      "type": "video",
+      "title": "RuTube со стартом с 30 секунды",
+      "text": "Пропускаем интро.",
+      "media": "https://runtime.video.cloud.yandex.net/player/video/vplvms27pa2emqvqygby?autoplay=0&mute=0",
+      "tags": ["видео"],
+      "likes": 0,
+      "comments": []
+    },
+    {
+      "id": 1,
+      "author": "WasabiApps",
+      "avatar": "🎮",
+      "date": "2026-09-28T18:00:00",
+      "type": "text",
+      "title": "Начало рабочего дня!",
+      "text": "Сегодня понедельник, а это значит, что пятница уже скоро, а если точнее через 78 часов",
+      "media": "",
+      "tags": ["новости", "запуск"],
+      "likes": 17493,
+      "comments": [
+        { "author": "Иван", "text": "Отличная новость! 🎉" },
+        { "author": "Мария", "text": "Ждём уже пятницу!" }
+      ]
+    }   
+  ]
+}

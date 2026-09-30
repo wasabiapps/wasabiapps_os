@@ -1,0 +1,2333 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<title>WasabiOS Web</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Arial, sans-serif; }
+  html, body { width: 100%; height: 100%; overflow: hidden; background: #000; }
+
+  /* ============ DESKTOP ============ */
+  #desktop {
+    position: absolute;
+    inset: 0;
+    background: #008080;
+    background-size: cover;
+    background-position: center;
+    overflow: hidden;
+  }
+  #desktop.dark { background-color: #1a1a1a; }
+
+  /* ============ DESKTOP ICONS ============ */
+  .desktop-icons {
+    position: absolute;
+    top: 20px; left: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+  }
+  .desktop-icon {
+    width: 80px;
+    text-align: center;
+    color: white;
+    cursor: pointer;
+    padding: 8px;
+    border-radius: 6px;
+    user-select: none;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
+    transition: background 0.2s;
+  }
+  .desktop-icon:hover { background: rgba(255,255,255,0.2); }
+  .desktop-icon .icon { font-size: 32px; display: block; margin-bottom: 4px; }
+  .desktop-icon .label { font-size: 12px; word-wrap: break-word; }
+
+  /* ============ TASKBAR ============ */
+  #taskbar {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 44px;
+    background: #222;
+    display: flex;
+    align-items: center;
+    padding: 0 6px;
+    gap: 6px;
+    color: white;
+    z-index: 1000;
+  }
+  #startBtn {
+    background: #4CAF50;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: background 0.2s;
+  }
+  #startBtn:hover { background: #66bb6a; }
+
+  #taskButtons { display: flex; gap: 4px; flex: 1; overflow-x: auto; }
+  .task-btn {
+    background: #444;
+    color: white;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 12px;
+    max-width: 150px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    transition: background 0.2s;
+  }
+  .task-btn:hover { background: #666; }
+
+  #tray {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 13px;
+  }
+  #tray .tray-item { cursor: pointer; }
+  #notifyBtn {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 18px;
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 4px;
+    transition: background 0.2s;
+  }
+  #notifyBtn:hover { background: #444; }
+  #notifyBtn.alert { background: red; animation: pulse 1s infinite; }
+  @keyframes pulse { 50% { opacity: 0.6; } }
+
+  /* ============ WINDOWS ============ */
+  .window {
+    position: absolute;
+    background: #f0f0f0;
+    border-radius: 6px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+    display: flex;
+    flex-direction: column;
+    min-width: 300px;
+    min-height: 200px;
+    overflow: hidden;
+    z-index: 100;
+  }
+  .window.dark { background: #2d2d2d; color: #eee; }
+  .window.dark .window-body { background: #2d2d2d; }
+  .window.dark input, .window.dark textarea, .window.dark select {
+    background: #444; color: #eee; border-color: #555;
+  }
+
+  .window-header {
+    background: #333;
+    color: white;
+    padding: 8px 12px;
+    cursor: move;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    user-select: none;
+    font-size: 13px;
+    font-weight: bold;
+  }
+  .window-controls { display: flex; gap: 6px; }
+  .window-controls button {
+    background: #555;
+    color: white;
+    border: none;
+    width: 22px; height: 22px;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 12px;
+    line-height: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .window-controls button:hover { background: #777; }
+  .window-controls button.close:hover { background: #f44336; }
+
+  .window-body {
+    flex: 1;
+    padding: 10px;
+    overflow: auto;
+    background: #f0f0f0;
+  }
+
+  /* ============ BUTTONS ============ */
+  .btn {
+    background: #e0e0e0;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 13px;
+    transition: filter 0.2s;
+  }
+  .btn:hover { filter: brightness(1.1); }
+  .btn.primary { background: #4CAF50; color: white; }
+  .btn.info    { background: #2196F3; color: white; }
+  .btn.danger  { background: #f44336; color: white; }
+  .btn.warn    { background: #FF9800; color: white; }
+  .btn.gray    { background: #9E9E9E; color: white; }
+
+  /* ============ START MENU ============ */
+  #startMenu {
+    position: absolute;
+    bottom: 50px; left: 8px;
+    width: 260px;
+    background: #f0f0f0;
+    border-radius: 8px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+    padding: 8px;
+    display: none;
+    z-index: 2000;
+    max-height: 70vh;
+    overflow-y: auto;
+  }
+  #startMenu.open { display: block; }
+  #startMenu .menu-item {
+    display: block;
+    width: 100%;
+    text-align: left;
+    padding: 8px 12px;
+    border: none;
+    background: white;
+    border-radius: 4px;
+    cursor: pointer;
+    margin-bottom: 3px;
+    font-size: 13px;
+    transition: background 0.15s;
+  }
+  #startMenu .menu-item:hover { background: #e3f2fd; }
+  #startMenu .power-row {
+    display: flex;
+    gap: 6px;
+    margin-top: 8px;
+    padding-top: 8px;
+    border-top: 1px solid #ccc;
+  }
+  #startMenu .power-row button { flex: 1; }
+
+  /* ============ FORMS ============ */
+  .form-row { margin-bottom: 10px; }
+  .form-row label { display: block; font-size: 13px; margin-bottom: 4px; }
+  .form-row input, .form-row select, .form-row textarea {
+    width: 100%;
+    padding: 6px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 13px;
+    font-family: inherit;
+  }
+  textarea { resize: vertical; min-height: 80px; }
+
+  /* ============ SPLIT LAYOUTS ============ */
+  .split { display: flex; gap: 10px; height: 100%; }
+  .split .left { width: 180px; display: flex; flex-direction: column; }
+  .split .right { flex: 1; display: flex; flex-direction: column; }
+
+  .contact-list {
+    flex: 1;
+    overflow-y: auto;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    background: white;
+  }
+  .contact-item {
+    padding: 8px;
+    cursor: pointer;
+    border-bottom: 1px solid #eee;
+    font-size: 13px;
+  }
+  .contact-item:hover { background: #e3f2fd; }
+  .contact-item.active { background: #bbdefb; font-weight: bold; }
+  .contact-item .unread { color: red; font-weight: bold; }
+
+  .chat-box {
+    flex: 1;
+    overflow-y: auto;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    padding: 10px;
+    background: white;
+    font-size: 13px;
+    margin-bottom: 8px;
+  }
+  .chat-msg { margin-bottom: 8px; }
+  .chat-msg .meta { font-size: 11px; color: #888; }
+  .chat-msg.mine .meta { color: #2196F3; }
+
+  .post {
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    padding: 12px;
+    margin-bottom: 10px;
+  }
+  .post h3 { font-size: 15px; margin-bottom: 4px; }
+  .post .meta { font-size: 12px; color: #666; margin-bottom: 6px; }
+  .post .content { font-size: 13px; margin-bottom: 8px; white-space: pre-wrap; }
+  .post .actions { display: flex; gap: 6px; }
+  .comment {
+    background: #f5f5f5;
+    padding: 6px;
+    border-radius: 4px;
+    margin-top: 4px;
+    font-size: 12px;
+  }
+
+  /* ============ NOTIFICATIONS ============ */
+  #notifPanel {
+    position: absolute;
+    bottom: 50px; right: 8px;
+    width: 300px;
+    max-height: 400px;
+    overflow-y: auto;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+    padding: 10px;
+    display: none;
+    z-index: 2000;
+  }
+  #notifPanel.open { display: block; }
+  #notifPanel h3 { font-size: 14px; margin-bottom: 8px; }
+  #notifPanel .notif {
+    background: #f5f5f5;
+    padding: 6px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    margin-bottom: 5px;
+  }
+
+  /* ============ MODALS ============ */
+  .modal-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.7);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 5000;
+  }
+  .modal {
+    background: white;
+    border-radius: 8px;
+    padding: 24px;
+    width: 340px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+  }
+  .modal h2 { margin-bottom: 16px; text-align: center; color: #333; }
+  .modal .btn { width: 100%; margin-top: 6px; }
+
+  /* ============ SPLASH ============ */
+  #splash {
+    position: fixed;
+    inset: 0;
+    background: #2d2d2d;
+    color: white;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+  }
+  #splash h1 { color: #4CAF50; font-size: 32px; margin-bottom: 20px; }
+  #splash .progress {
+    width: 300px; height: 6px;
+    background: #444;
+    border-radius: 3px;
+    overflow: hidden;
+    margin-top: 20px;
+  }
+  #splash .progress-bar {
+    height: 100%;
+    background: #4CAF50;
+    width: 0%;
+    transition: width 0.1s;
+  }
+
+  /* ============ TERMINAL ============ */
+  .terminal-output {
+    background: black;
+    color: #0f0;
+    font-family: 'Courier New', monospace;
+    font-size: 13px;
+    padding: 10px;
+    border-radius: 4px;
+    height: 100%;
+    overflow-y: auto;
+    white-space: pre-wrap;
+    margin-bottom: 6px;
+  }
+  .terminal-input-row { display: flex; gap: 6px; }
+  .terminal-input-row input {
+    flex: 1;
+    background: black;
+    color: #0f0;
+    font-family: 'Courier New', monospace;
+    border: 1px solid #333;
+    padding: 6px;
+    border-radius: 4px;
+  }
+
+  /* ============ CALCULATOR ============ */
+  .calc-display {
+    background: white;
+    border: 1px solid #ccc;
+    padding: 12px;
+    font-size: 22px;
+    text-align: right;
+    border-radius: 4px;
+    margin-bottom: 8px;
+    min-height: 50px;
+    overflow: hidden;
+  }
+  .calc-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 4px;
+  }
+  .calc-grid button {
+    padding: 14px;
+    font-size: 16px;
+    border: none;
+    background: #e0e0e0;
+    border-radius: 4px;
+    cursor: pointer;
+  }
+  .calc-grid button:hover { background: #d0d0d0; }
+  .calc-grid button.op { background: #2196F3; color: white; }
+  .calc-grid button.eq { background: #4CAF50; color: white; }
+
+  /* ============ FILE MANAGER ============ */
+  .fm-toolbar { display: flex; gap: 4px; margin-bottom: 8px; flex-wrap: wrap; }
+  .fm-path {
+    background: white;
+    border: 1px solid #ccc;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    margin-bottom: 8px;
+    font-family: monospace;
+  }
+  .fm-list {
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    background: white;
+    height: 300px;
+    overflow-y: auto;
+  }
+  .fm-item {
+    padding: 6px 10px;
+    font-size: 13px;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    border-bottom: 1px solid #f0f0f0;
+  }
+  .fm-item:hover { background: #e3f2fd; }
+  .fm-item.selected { background: #bbdefb; }
+  .fm-item .name::before { content: '📄 '; }
+  .fm-item.folder .name::before { content: '📁 '; }
+
+  /* ============ SETTINGS / TABS ============ */
+  .tabs { display: flex; border-bottom: 1px solid #ccc; margin-bottom: 12px; }
+  .tab {
+    padding: 8px 16px;
+    cursor: pointer;
+    border: none;
+    background: none;
+    font-size: 13px;
+    border-bottom: 2px solid transparent;
+  }
+  .tab.active { border-bottom-color: #2196F3; color: #2196F3; font-weight: bold; }
+
+  /* ============ APP STORE ============ */
+  .store-card { transition: box-shadow 0.2s; }
+  .store-card:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
+
+  /* Scrollbars */
+  ::-webkit-scrollbar { width: 8px; height: 8px; }
+  ::-webkit-scrollbar-thumb { background: #888; border-radius: 4px; }
+  ::-webkit-scrollbar-track { background: #eee; }
+</style>
+</head>
+<body>
+
+<!-- SPLASH -->
+<div id="splash">
+  <h1>WasabiOS</h1>
+  <div>Загрузка системы...</div>
+  <div class="progress"><div class="progress-bar" id="splashBar"></div></div>
+</div>
+
+<!-- DESKTOP -->
+<div id="desktop">
+  <div class="desktop-icons" id="desktopIcons"></div>
+
+  <!-- START MENU -->
+  <div id="startMenu"></div>
+
+  <!-- NOTIFICATIONS -->
+  <div id="notifPanel">
+    <h3>Уведомления</h3>
+    <div id="notifList"><em>Нет новых уведомлений</em></div>
+  </div>
+
+  <!-- TASKBAR -->
+  <div id="taskbar">
+    <button id="startBtn">🟢 Пуск</button>
+    <div id="taskButtons"></div>
+    <div id="tray">
+      <span class="tray-item" id="userLabel">Гость</span>
+      <span class="tray-item">🔋 100%</span>
+      <span class="tray-item" id="clock">--:--:--</span>
+      <button id="notifyBtn">🔔</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ================================================================
+   WASABIOS WEB — главный скрипт
+   ================================================================ */
+
+/* ---------- Storage helpers ---------- */
+const DB = {
+  get(key, def) {
+    try { const v = localStorage.getItem(key); return v ? JSON.parse(v) : def; }
+    catch { return def; }
+  },
+  set(key, val) { localStorage.setItem(key, JSON.stringify(val)); }
+};
+
+/* ---------- SHA-256 ---------- */
+async function hashPassword(pwd) {
+  const buf = new TextEncoder().encode(pwd);
+  const hash = await crypto.subtle.digest('SHA-256', buf);
+  return Array.from(new Uint8Array(hash)).map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
+/* ================================================================
+   ACCOUNT MANAGER
+   ================================================================ */
+const AccountManager = {
+  KEY: 'wasabi_users',
+  async init() {
+    if (!localStorage.getItem(this.KEY)) {
+      const users = {
+        admin: { password: await hashPassword('admin'), role: 'admin', registered: new Date().toISOString() },
+        user:  { password: await hashPassword('user'),  role: 'user',  registered: new Date().toISOString() }
+      };
+      DB.set(this.KEY, users);
+    }
+  },
+  load() { return DB.get(this.KEY, {}); },
+  save(u) { DB.set(this.KEY, u); },
+  async register(username, password, role = 'user') {
+    const users = this.load();
+    if (users[username]) return { ok: false, message: 'Пользователь уже существует' };
+    users[username] = { password: await hashPassword(password), role, registered: new Date().toISOString() };
+    this.save(users);
+    return { ok: true, message: 'Регистрация успешна' };
+  },
+  async authenticate(username, password) {
+    const users = this.load();
+    if (!users[username]) return { ok: false, message: 'Пользователь не найден' };
+    const hash = await hashPassword(password);
+    if (users[username].password !== hash) return { ok: false, message: 'Неверный пароль' };
+    return { ok: true, message: 'OK' };
+  },
+  getRole(username) { return (this.load()[username] || {}).role || 'user'; },
+  delete(username) { const u = this.load(); delete u[username]; this.save(u); }
+};
+
+/* ================================================================
+   MESSENGER
+   ================================================================ */
+const Messenger = {
+  KEY: 'wasabi_messages',
+  init() {
+    if (!localStorage.getItem(this.KEY)) {
+      DB.set(this.KEY, {
+        messages: [
+          { id: 1, sender: 'admin', recipient: 'user', text: 'Добро пожаловать в WasabiOS!', timestamp: new Date().toISOString(), read: false },
+          { id: 2, sender: 'user', recipient: 'admin', text: 'Спасибо! Как пользоваться мессенджером?', timestamp: new Date().toISOString(), read: false }
+        ],
+        last_id: 2
+      });
+    }
+  },
+  load() { return DB.get(this.KEY, { messages: [], last_id: 0 }); },
+  save(d) { DB.set(this.KEY, d); },
+  send(sender, recipient, text) {
+    const d = this.load();
+    const id = d.last_id + 1;
+    d.messages.push({ id, sender, recipient, text, timestamp: new Date().toISOString(), read: false });
+    d.last_id = id;
+    this.save(d);
+  },
+  conversation(u1, u2) {
+    return this.load().messages
+      .filter(m => (m.sender === u1 && m.recipient === u2) || (m.sender === u2 && m.recipient === u1))
+      .sort((a, b) => a.timestamp.localeCompare(b.timestamp));
+  },
+  contacts(username) {
+    const set = new Set();
+    this.load().messages.forEach(m => {
+      if (m.sender === username) set.add(m.recipient);
+      else if (m.recipient === username) set.add(m.sender);
+    });
+    return [...set];
+  },
+  unreadCount(username, contact) {
+    return this.load().messages.filter(m => m.sender === contact && m.recipient === username && !m.read).length;
+  },
+  markRead(messageId) {
+    const d = this.load();
+    const m = d.messages.find(x => x.id === messageId);
+    if (m) m.read = true;
+    this.save(d);
+  }
+};
+
+/* ================================================================
+   NEWS MANAGER
+   ================================================================ */
+const NewsManager = {
+  KEY: 'wasabi_news',
+  init() {
+    if (!localStorage.getItem(this.KEY)) {
+      DB.set(this.KEY, {
+        posts: [{
+          id: 1,
+          title: 'Добро пожаловать в WasabiOS!',
+          content: 'Это первая новость в вашей системе.',
+          author: 'admin',
+          timestamp: new Date().toISOString(),
+          likes: 0,
+          comments: []
+        }],
+        last_id: 1
+      });
+    }
+  },
+  load() { return DB.get(this.KEY, { posts: [], last_id: 0 }); },
+  save(d) { DB.set(this.KEY, d); },
+  addPost(title, content, author) {
+    const d = this.load();
+    const id = d.last_id + 1;
+    d.posts.push({ id, title, content, author, timestamp: new Date().toISOString(), likes: 0, comments: [] });
+    d.last_id = id;
+    this.save(d);
+  },
+  getPosts() { return this.load().posts.slice().reverse(); },
+  addComment(postId, author, text) {
+    const d = this.load();
+    const p = d.posts.find(x => x.id === postId);
+    if (p) p.comments.push({ author, text, timestamp: new Date().toISOString() });
+    this.save(d);
+  },
+  addLike(postId) {
+    const d = this.load();
+    const p = d.posts.find(x => x.id === postId);
+    if (p) p.likes++;
+    this.save(d);
+  }
+};
+
+/* ================================================================
+   APP STORE
+   ================================================================ */
+const AppStore = {
+  KEY: 'wasabi_installed',
+  installed: new Set(),
+
+  init() {
+    const saved = DB.get(this.KEY, []);
+    this.installed = new Set(saved);
+    Object.values(APP_STORE).forEach(a => { if (a.builtin) this.installed.add(a.id); });
+    this.save();
+  },
+  save() { DB.set(this.KEY, [...this.installed]); },
+  isInstalled(id) { return this.installed.has(id); },
+  install(id) {
+    if (!APP_STORE[id]) return false;
+    this.installed.add(id);
+    this.save();
+    return true;
+  },
+  uninstall(id) {
+    const app = APP_STORE[id];
+    if (!app || app.builtin) return false;
+    this.installed.delete(id);
+    this.save();
+    return true;
+  },
+  listInstalled() { return Object.values(APP_STORE).filter(a => this.installed.has(a.id)); },
+  listAvailable() { return Object.values(APP_STORE).filter(a => !this.installed.has(a.id)); },
+  listAll() { return Object.values(APP_STORE); }
+};
+
+const APP_STORE = {
+  /* ---------- Встроенные ---------- */
+  files:      { id: 'files',      name: 'Файлы',              icon: '📁', desc: 'Виртуальная файловая система',  category: 'Система',     builtin: true, run: () => openFileManager() },
+  messenger:  { id: 'messenger',  name: 'Мессенджер',         icon: '💬', desc: 'Обмен сообщениями',             category: 'Общение',     builtin: true, run: () => openMessenger() },
+  news:       { id: 'news',       name: 'Лента новостей',     icon: '📰', desc: 'Посты, лайки, комментарии',     category: 'Общение',     builtin: true, run: () => openNewsFeed() },
+  diary:      { id: 'diary',      name: 'Дневник',            icon: '📔', desc: 'Личные записи по датам',        category: 'Личное',      builtin: true, run: () => openDiary() },
+  calculator: { id: 'calculator', name: 'Калькулятор',        icon: '🧮', desc: 'Простые вычисления',            category: 'Утилиты',     builtin: true, run: () => openCalculator() },
+  terminal:   { id: 'terminal',   name: 'Терминал',           icon: '⌨️', desc: 'Командная строка',              category: 'Система',     builtin: true, run: () => openTerminal() },
+  settings:   { id: 'settings',   name: 'Настройки',          icon: '⚙️', desc: 'Тема, обои, цвет',              category: 'Система',     builtin: true, run: () => openSettings() },
+
+  /* ---------- WasabiApps (встроенный магазин) ---------- */
+  wasabiapps: {
+    id: 'wasabiapps',
+    name: 'WasabiApps',
+    icon: '🛍️',
+    desc: 'Магазин приложений, книг, музыки и обзоров',
+    category: 'Система',
+    builtin: true,
+    run: () => openWasabiApps()
+  },
+
+  /* ---------- Устанавливаемые ---------- */
+  notes: {
+    id: 'notes', name: 'Заметки', icon: '🗒️',
+    desc: 'Быстрые цветные стикеры',
+    category: 'Личное', run: () => NotesApp.open()
+  },
+  clock: {
+    id: 'clock', name: 'Часы и таймер', icon: '⏰',
+    desc: 'Секундомер и таймер обратного отсчёта',
+    category: 'Утилиты', run: () => ClockApp.open()
+  },
+  weather: {
+    id: 'weather', name: 'Погода (демо)', icon: '🌤️',
+    desc: 'Демонстрационный прогноз погоды',
+    category: 'Развлечения', run: () => WeatherApp.open()
+  },
+  todo: {
+    id: 'todo', name: 'Список дел', icon: '✅',
+    desc: 'Задачи с отметкой о выполнении',
+    category: 'Личное', run: () => TodoApp.open()
+  },
+  paint: {
+    id: 'paint', name: 'Рисовалка', icon: '🎨',
+    desc: 'Рисование мышью на холсте',
+    category: 'Развлечения', run: () => PaintApp.open()
+  },
+  converter: {
+    id: 'converter', name: 'Конвертер валют', icon: '💱',
+    desc: 'Пересчёт валют по фиксированному курсу',
+    category: 'Утилиты', run: () => ConverterApp.open()
+  },
+  password: {
+    id: 'password', name: 'Генератор паролей', icon: '🔐',
+    desc: 'Надёжные случайные пароли',
+    category: 'Утилиты', run: () => PasswordApp.open()
+  },
+  snake: {
+    id: 'snake', name: 'Змейка', icon: '🐍',
+    desc: 'Классическая игра на стрелках',
+    category: 'Игры', run: () => SnakeApp.open()
+  },
+  currency: {
+    id: 'currency', name: 'Курс валют (демо)', icon: '📈',
+    desc: 'Демо-котировки, обновляются каждые 3 сек',
+    category: 'Развлечения', run: () => CurrencyApp.open()
+  }
+};
+
+/* ================================================================
+   DESKTOP / TASKBAR / START MENU (OS)
+   ================================================================ */
+const OS = {
+  currentUser: null,
+  userRole: null,
+  windows: [],
+  notifications: [],
+  zIndex: 100,
+  currentTheme: 'light',
+
+  init() {
+    this.desktop = document.getElementById('desktop');
+    this.taskButtons = document.getElementById('taskButtons');
+    this.startMenu = document.getElementById('startMenu');
+    this.notifPanel = document.getElementById('notifPanel');
+    this.notifList = document.getElementById('notifList');
+    this.notifyBtn = document.getElementById('notifyBtn');
+
+    this.renderDesktopIcons();
+    this.renderStartMenu();
+    this.startClock();
+    this.bindEvents();
+
+    const s = DB.get('wasabi_settings', { theme: 'light', wallpaper: null });
+    this.currentTheme = s.theme || 'light';
+    if (s.wallpaper) this.desktop.style.backgroundImage = `url(${s.wallpaper})`;
+    if (s.theme === 'dark') this.desktop.classList.add('dark');
+  },
+
+  bindEvents() {
+    document.getElementById('startBtn').addEventListener('click', e => {
+      e.stopPropagation();
+      this.startMenu.classList.toggle('open');
+    });
+    this.notifyBtn.addEventListener('click', e => {
+      e.stopPropagation();
+      this.notifPanel.classList.toggle('open');
+      this.notifyBtn.classList.remove('alert');
+    });
+    document.addEventListener('click', e => {
+      if (!this.startMenu.contains(e.target)) this.startMenu.classList.remove('open');
+      if (!this.notifPanel.contains(e.target) && e.target !== this.notifyBtn) this.notifPanel.classList.remove('open');
+    });
+  },
+
+  renderDesktopIcons() {
+    const icons = [
+      { app: 'files',       label: 'Файлы',       icon: '📁' },
+      { app: 'messenger',   label: 'Мессенджер',  icon: '💬' },
+      { app: 'news',        label: 'Новости',     icon: '📰' },
+      { app: 'diary',       label: 'Дневник',     icon: '📔' },
+      { app: 'calculator',  label: 'Калькулятор', icon: '🧮' },
+      { app: 'terminal',    label: 'Терминал',    icon: '⌨️' },
+      { app: 'wasabiapps',  label: 'WasabiApps',  icon: '🛍️' },
+      { app: 'appstore',    label: 'Магазин ОС',  icon: '📦', cmd: () => openAppStore() }
+    ];
+    const box = document.getElementById('desktopIcons');
+    box.innerHTML = '';
+    icons.forEach(i => {
+      const el = document.createElement('div');
+      el.className = 'desktop-icon';
+      el.innerHTML = `<span class="icon">${i.icon}</span><span class="label">${i.label}</span>`;
+      const handler = () => i.cmd ? i.cmd() : APP_STORE[i.app].run();
+      el.addEventListener('dblclick', handler);
+      el.addEventListener('click', handler);
+      box.appendChild(el);
+    });
+  },
+
+  renderStartMenu() {
+    const apps = [
+      { name: '📦 Магазин ОС', cmd: () => openAppStore() },
+      ...AppStore.listInstalled().map(a => ({ name: `${a.icon} ${a.name}`, cmd: a.run }))
+    ];
+    let html = apps.map((a, i) => `<button class="menu-item" data-idx="${i}">${a.name}</button>`).join('');
+    html += `
+      <div class="power-row">
+        <button class="btn danger" id="shutdownBtn">⏻ Выкл</button>
+        <button class="btn gray" id="logoutBtn">Выход</button>
+      </div>`;
+    this.startMenu.innerHTML = html;
+
+    apps.forEach((a, i) => {
+      this.startMenu.querySelector(`[data-idx="${i}"]`).addEventListener('click', () => {
+        this.startMenu.classList.remove('open');
+        a.cmd();
+      });
+    });
+    document.getElementById('shutdownBtn').addEventListener('click', () => {
+      if (confirm('Выключить систему?')) location.reload();
+    });
+    document.getElementById('logoutBtn').addEventListener('click', () => {
+      this.currentUser = null;
+      this.userRole = null;
+      document.getElementById('userLabel').textContent = 'Гость';
+      showLogin();
+    });
+  },
+
+  startClock() {
+    const el = document.getElementById('clock');
+    const tick = () => { el.textContent = new Date().toTimeString().slice(0, 8); };
+    tick();
+    setInterval(tick, 1000);
+  },
+
+  notify(message) {
+    this.notifications.unshift({ message, time: new Date() });
+    this.notifList.innerHTML = this.notifications
+      .map(n => `<div class="notif">${n.message}<br><small style="color:#888">${n.time.toLocaleTimeString()}</small></div>`)
+      .join('');
+    this.notifyBtn.classList.add('alert');
+    setTimeout(() => this.notifyBtn.classList.remove('alert'), 3000);
+  },
+
+  createWindow(title, width, height, bodyHtml) {
+    const win = document.createElement('div');
+    win.className = 'window';
+    if (this.currentTheme === 'dark') win.classList.add('dark');
+    win.style.width = width + 'px';
+    win.style.height = height + 'px';
+    const offset = this.windows.length * 30;
+    win.style.left = (60 + offset) + 'px';
+    win.style.top  = (40 + offset) + 'px';
+    win.style.zIndex = ++this.zIndex;
+
+    win.innerHTML = `
+      <div class="window-header">
+        <span class="title">${title}</span>
+        <div class="window-controls">
+          <button class="min" title="Свернуть">—</button>
+          <button class="close" title="Закрыть">✕</button>
+        </div>
+      </div>
+      <div class="window-body"></div>
+    `;
+    win.querySelector('.window-body').innerHTML = bodyHtml;
+    document.getElementById('desktop').appendChild(win);
+
+    win.addEventListener('mousedown', () => { win.style.zIndex = ++this.zIndex; });
+    this.makeDraggable(win, win.querySelector('.window-header'));
+    win.querySelector('.close').addEventListener('click', () => this.closeWindow(win));
+    win.querySelector('.min').addEventListener('click', () => { win.style.display = 'none'; });
+
+    const btn = document.createElement('button');
+    btn.className = 'task-btn';
+    btn.textContent = title;
+    btn.addEventListener('click', () => {
+      if (win.style.display === 'none') { win.style.display = 'flex'; win.style.zIndex = ++this.zIndex; }
+      else { win.style.zIndex = ++this.zIndex; }
+    });
+    this.taskButtons.appendChild(btn);
+
+    win._taskBtn = btn;
+    this.windows.push(win);
+    return win;
+  },
+
+  closeWindow(win) {
+    if (win._taskBtn) win._taskBtn.remove();
+    win.remove();
+    this.windows = this.windows.filter(w => w !== win);
+  },
+
+  makeDraggable(el, handle) {
+    let startX, startY, startLeft, startTop, dragging = false;
+    handle.addEventListener('mousedown', e => {
+      dragging = true;
+      startX = e.clientX; startY = e.clientY;
+      startLeft = el.offsetLeft; startTop = el.offsetTop;
+      document.body.style.userSelect = 'none';
+    });
+    document.addEventListener('mousemove', e => {
+      if (!dragging) return;
+      el.style.left = (startLeft + e.clientX - startX) + 'px';
+      el.style.top  = (startTop  + e.clientY - startY) + 'px';
+    });
+    document.addEventListener('mouseup', () => {
+      dragging = false;
+      document.body.style.userSelect = '';
+    });
+  },
+
+  // Применяет тему ко всем открытым окнам (для смены темы на лету)
+  applyThemeToAllWindows() {
+    this.windows.forEach(w => {
+      if (this.currentTheme === 'dark') w.classList.add('dark');
+      else w.classList.remove('dark');
+    });
+  }
+};
+
+/* ================================================================
+   APPS — общие функции
+   ================================================================ */
+
+/* ---------- LOGIN / REGISTER ---------- */
+function showLogin() {
+  const backdrop = document.createElement('div');
+  backdrop.className = 'modal-backdrop';
+  backdrop.id = 'loginModal';
+  backdrop.innerHTML = `
+    <div class="modal">
+      <h2>WasabiOS</h2>
+      <div class="form-row"><label>Логин</label><input id="loginUser" autofocus></div>
+      <div class="form-row"><label>Пароль</label><input id="loginPass" type="password"></div>
+      <button class="btn primary" id="doLogin">Войти</button>
+      <button class="btn info" id="showRegister">Регистрация</button>
+      <button class="btn gray" id="skipLogin">Войти как гость</button>
+    </div>
+  `;
+  document.body.appendChild(backdrop);
+
+  const err = m => alert(m);
+  document.getElementById('doLogin').addEventListener('click', async () => {
+    const u = document.getElementById('loginUser').value.trim();
+    const p = document.getElementById('loginPass').value;
+    if (!u || !p) return err('Введите логин и пароль');
+    const r = await AccountManager.authenticate(u, p);
+    if (!r.ok) return err(r.message);
+    OS.currentUser = u;
+    OS.userRole = AccountManager.getRole(u);
+    document.getElementById('userLabel').textContent = u;
+    backdrop.remove();
+    OS.notify(`Добро пожаловать, ${u}!`);
+    broadcastUserToWasabiApps();
+  });
+  document.getElementById('showRegister').addEventListener('click', () => {
+    backdrop.remove();
+    showRegister();
+  });
+  document.getElementById('skipLogin').addEventListener('click', () => {
+    OS.currentUser = 'guest';
+    OS.userRole = 'guest';
+    document.getElementById('userLabel').textContent = 'Гость';
+    backdrop.remove();
+    broadcastUserToWasabiApps();
+  });
+}
+
+function showRegister() {
+  const backdrop = document.createElement('div');
+  backdrop.className = 'modal-backdrop';
+  backdrop.innerHTML = `
+    <div class="modal">
+      <h2>Регистрация</h2>
+      <div class="form-row"><label>Логин</label><input id="regUser"></div>
+      <div class="form-row"><label>Пароль</label><input id="regPass" type="password"></div>
+      <div class="form-row"><label>Подтвердите пароль</label><input id="regConfirm" type="password"></div>
+      <button class="btn primary" id="doRegister">Зарегистрироваться</button>
+      <button class="btn gray" id="backLogin">Назад</button>
+    </div>
+  `;
+  document.body.appendChild(backdrop);
+
+  document.getElementById('backLogin').addEventListener('click', () => {
+    backdrop.remove();
+    showLogin();
+  });
+  document.getElementById('doRegister').addEventListener('click', async () => {
+    const u = document.getElementById('regUser').value.trim();
+    const p = document.getElementById('regPass').value;
+    const c = document.getElementById('regConfirm').value;
+    if (!u || !p) return alert('Заполните все поля');
+    if (p !== c) return alert('Пароли не совпадают');
+    const r = await AccountManager.register(u, p);
+    if (!r.ok) return alert(r.message);
+    alert('Регистрация успешна!');
+    backdrop.remove();
+    showLogin();
+  });
+}
+
+/* ---------- FILE MANAGER ---------- */
+const FileManager = {
+  KEY: 'wasabi_fs',
+  init() {
+    if (!localStorage.getItem(this.KEY)) {
+      DB.set(this.KEY, {
+        '/': { type: 'folder', children: ['Документы', 'Заметка.txt'] },
+        '/Документы': { type: 'folder', children: [] },
+        '/Заметка.txt': { type: 'file', content: 'Пример содержимого файла.' }
+      });
+    }
+  },
+  load() { return DB.get(this.KEY, {}); },
+  save(d) { DB.set(this.KEY, d); }
+};
+
+function openFileManager() {
+  FileManager.init();
+  let cwd = '/';
+  let selected = null;
+
+  const win = OS.createWindow('Файловый менеджер', 700, 480, `
+    <div class="fm-toolbar">
+      <button class="btn" id="fmUp">↑ Вверх</button>
+      <button class="btn" id="fmHome">⌂ Корень</button>
+      <button class="btn info" id="fmNewFile">📄 Новый файл</button>
+      <button class="btn info" id="fmNewFolder">📁 Новая папка</button>
+      <button class="btn danger" id="fmDelete">🗑 Удалить</button>
+      <button class="btn" id="fmOpen">Открыть</button>
+    </div>
+    <div class="fm-path" id="fmPath">/</div>
+    <div class="fm-list" id="fmList"></div>
+  `);
+
+  const body = win.querySelector('.window-body');
+  const listEl = body.querySelector('#fmList');
+  const pathEl = body.querySelector('#fmPath');
+
+  const render = () => {
+    const fs = FileManager.load();
+    pathEl.textContent = cwd;
+    listEl.innerHTML = '';
+    const node = fs[cwd];
+    if (!node || !node.children || node.children.length === 0) {
+      listEl.innerHTML = '<div style="padding:20px;color:#888;text-align:center">Папка пуста</div>';
+      return;
+    }
+    node.children.forEach(name => {
+      const childPath = (cwd === '/' ? '/' : cwd + '/') + name;
+      const child = fs[childPath];
+      if (!child) return;
+      const div = document.createElement('div');
+      div.className = 'fm-item' + (child.type === 'folder' ? ' folder' : '');
+      div.innerHTML = `<span class="name">${name}</span><span style="color:#888;font-size:11px">${child.type}</span>`;
+      div.addEventListener('click', () => {
+        listEl.querySelectorAll('.fm-item').forEach(x => x.classList.remove('selected'));
+        div.classList.add('selected');
+        selected = name;
+      });
+      div.addEventListener('dblclick', () => {
+        if (child.type === 'folder') { cwd = childPath; selected = null; render(); }
+        else openTextEditor(childPath, child.content);
+      });
+      listEl.appendChild(div);
+    });
+  };
+
+  body.querySelector('#fmUp').addEventListener('click', () => {
+    if (cwd === '/') return;
+    const parts = cwd.split('/').filter(Boolean);
+    parts.pop();
+    cwd = '/' + parts.join('/');
+    if (cwd === '') cwd = '/';
+    selected = null;
+    render();
+  });
+  body.querySelector('#fmHome').addEventListener('click', () => { cwd = '/'; selected = null; render(); });
+
+  body.querySelector('#fmNewFile').addEventListener('click', () => {
+    const name = prompt('Имя файла:');
+    if (!name) return;
+    const fs = FileManager.load();
+    const path = (cwd === '/' ? '/' : cwd + '/') + name;
+    if (fs[path]) return alert('Уже существует');
+    fs[path] = { type: 'file', content: '' };
+    fs[cwd].children.push(name);
+    FileManager.save(fs);
+    render();
+  });
+  body.querySelector('#fmNewFolder').addEventListener('click', () => {
+    const name = prompt('Имя папки:');
+    if (!name) return;
+    const fs = FileManager.load();
+    const path = (cwd === '/' ? '/' : cwd + '/') + name;
+    if (fs[path]) return alert('Уже существует');
+    fs[path] = { type: 'folder', children: [] };
+    fs[cwd].children.push(name);
+    FileManager.save(fs);
+    render();
+  });
+  body.querySelector('#fmDelete').addEventListener('click', () => {
+    if (!selected) return alert('Выберите объект');
+    if (!confirm(`Удалить "${selected}"?`)) return;
+    const fs = FileManager.load();
+    const path = (cwd === '/' ? '/' : cwd + '/') + selected;
+    fs[cwd].children = fs[cwd].children.filter(c => c !== selected);
+    delete fs[path];
+    FileManager.save(fs);
+    selected = null;
+    render();
+  });
+  body.querySelector('#fmOpen').addEventListener('click', () => {
+    if (!selected) return alert('Выберите объект');
+    const fs = FileManager.load();
+    const path = (cwd === '/' ? '/' : cwd + '/') + selected;
+    const node = fs[path];
+    if (node.type === 'folder') { cwd = path; selected = null; render(); }
+    else openTextEditor(path, node.content);
+  });
+
+  render();
+}
+
+/* ---------- TEXT EDITOR ---------- */
+function openTextEditor(path = null, content = '') {
+  const win = OS.createWindow('Текстовый редактор' + (path ? ' — ' + path : ''), 600, 450, `
+    <div class="form-row">
+      <textarea id="teBody" style="height:340px;font-family:monospace">${content.replace(/</g,'&lt;')}</textarea>
+    </div>
+    <div style="display:flex;gap:6px">
+      <button class="btn primary" id="teSave">💾 Сохранить</button>
+      <button class="btn" id="teSaveAs">Сохранить как...</button>
+    </div>
+  `);
+  const body = win.querySelector('.window-body');
+  body.querySelector('#teSave').addEventListener('click', () => {
+    if (!path) return body.querySelector('#teSaveAs').click();
+    const fs = FileManager.load();
+    if (fs[path]) { fs[path].content = body.querySelector('#teBody').value; FileManager.save(fs); OS.notify('Файл сохранён: ' + path); }
+    else alert('Файл не найден');
+  });
+  body.querySelector('#teSaveAs').addEventListener('click', () => {
+    const name = prompt('Имя файла:');
+    if (!name) return;
+    const fs = FileManager.load();
+    const full = '/' + name;
+    fs[full] = { type: 'file', content: body.querySelector('#teBody').value };
+    if (!fs['/'].children.includes(name)) fs['/'].children.push(name);
+    FileManager.save(fs);
+    path = full;
+    OS.notify('Сохранено как ' + full);
+  });
+}
+
+/* ---------- MESSENGER ---------- */
+function openMessenger() {
+  if (!OS.currentUser || OS.currentUser === 'guest') return alert('Войдите в систему');
+  const me = OS.currentUser;
+  let currentContact = null;
+
+  const win = OS.createWindow('Мессенджер — ' + me, 720, 500, `
+    <div class="split" style="height:100%">
+      <div class="left">
+        <div style="font-weight:bold;margin-bottom:6px">Контакты</div>
+        <div class="contact-list" id="msgContacts"></div>
+      </div>
+      <div class="right">
+        <div class="chat-box" id="msgChat"><em>Выберите контакт</em></div>
+        <div style="display:flex;gap:6px">
+          <input id="msgInput" placeholder="Сообщение..." style="flex:1;padding:8px;border:1px solid #ccc;border-radius:4px">
+          <button class="btn primary" id="msgSend">Отправить</button>
+        </div>
+      </div>
+    </div>
+  `);
+  const body = win.querySelector('.window-body');
+  const contactsEl = body.querySelector('#msgContacts');
+  const chatEl = body.querySelector('#msgChat');
+  const inputEl = body.querySelector('#msgInput');
+
+  const renderContacts = () => {
+    if (Messenger.contacts(me).length === 0 && me !== 'admin') {
+      Messenger.send('admin', me, `Привет, ${me}! Я системный администратор.`);
+    }
+    const contacts = Messenger.contacts(me).sort();
+    contactsEl.innerHTML = contacts.map(c => {
+      const unread = Messenger.unreadCount(me, c);
+      return `<div class="contact-item${c === currentContact ? ' active' : ''}" data-c="${c}">
+        ${c} ${unread ? `<span class="unread">(${unread})</span>` : ''}
+      </div>`;
+    }).join('');
+    contactsEl.querySelectorAll('.contact-item').forEach(el => {
+      el.addEventListener('click', () => { currentContact = el.dataset.c; renderChat(); renderContacts(); });
+    });
+  };
+
+  const renderChat = () => {
+    if (!currentContact) { chatEl.innerHTML = '<em>Выберите контакт</em>'; return; }
+    const msgs = Messenger.conversation(me, currentContact);
+    chatEl.innerHTML = msgs.map(m => {
+      const mine = m.sender === me;
+      if (m.recipient === me && !m.read) Messenger.markRead(m.id);
+      return `<div class="chat-msg${mine ? ' mine' : ''}">
+        <div class="meta">${mine ? 'Вы' : m.sender} — ${new Date(m.timestamp).toLocaleString()}</div>
+        <div>${m.text.replace(/</g, '&lt;')}</div>
+      </div>`;
+    }).join('');
+    chatEl.scrollTop = chatEl.scrollHeight;
+  };
+
+  body.querySelector('#msgSend').addEventListener('click', () => {
+    const text = inputEl.value.trim();
+    if (!text || !currentContact) return;
+    Messenger.send(me, currentContact, text);
+    inputEl.value = '';
+    renderChat();
+  });
+  inputEl.addEventListener('keydown', e => { if (e.key === 'Enter') body.querySelector('#msgSend').click(); });
+
+  renderContacts();
+  if (Messenger.contacts(me).length) {
+    currentContact = Messenger.contacts(me)[0];
+    renderChat();
+  }
+}
+
+/* ---------- NEWS FEED ---------- */
+function openNewsFeed() {
+  if (!OS.currentUser || OS.currentUser === 'guest') return alert('Войдите в систему');
+  const me = OS.currentUser;
+
+  const win = OS.createWindow('Лента новостей', 720, 560, `
+    <div style="margin-bottom:10px">
+      <button class="btn primary" id="newsNew">+ Добавить новость</button>
+      <button class="btn" id="newsRefresh">↻ Обновить</button>
+    </div>
+    <div id="newsList"></div>
+  `);
+  const body = win.querySelector('.window-body');
+  const listEl = body.querySelector('#newsList');
+
+  const render = () => {
+    const posts = NewsManager.getPosts();
+    if (!posts.length) { listEl.innerHTML = '<em>Новостей нет</em>'; return; }
+    listEl.innerHTML = posts.map(p => `
+      <div class="post" data-id="${p.id}">
+        <h3>${p.title}</h3>
+        <div class="meta">Автор: ${p.author} | ${new Date(p.timestamp).toLocaleString()} | ❤️ ${p.likes}</div>
+        <div class="content">${p.content.replace(/</g, '&lt;')}</div>
+        <div class="actions">
+          <button class="btn danger" data-like>❤️ Нравится</button>
+          <button class="btn info" data-comment>💬 Комментировать</button>
+        </div>
+        <div class="comments" style="margin-top:8px">
+          ${p.comments.map(c => `<div class="comment"><b>${c.author}</b> (${new Date(c.timestamp).toLocaleString()}): ${c.text.replace(/</g,'&lt;')}</div>`).join('')}
+        </div>
+        <div class="add-comment" style="margin-top:6px;display:none">
+          <input placeholder="Ваш комментарий..." style="width:100%;padding:6px;border:1px solid #ccc;border-radius:4px">
+          <button class="btn primary" style="margin-top:4px">Отправить</button>
+        </div>
+      </div>
+    `).join('');
+
+    listEl.querySelectorAll('.post').forEach(postEl => {
+      const id = +postEl.dataset.id;
+      postEl.querySelector('[data-like]').addEventListener('click', () => { NewsManager.addLike(id); render(); });
+      postEl.querySelector('[data-comment]').addEventListener('click', () => {
+        const ac = postEl.querySelector('.add-comment');
+        ac.style.display = ac.style.display === 'none' ? 'block' : 'none';
+      });
+      postEl.querySelector('.add-comment button').addEventListener('click', () => {
+        const input = postEl.querySelector('.add-comment input');
+        if (!input.value.trim()) return;
+        NewsManager.addComment(id, me, input.value.trim());
+        render();
+      });
+    });
+  };
+
+  body.querySelector('#newsRefresh').addEventListener('click', render);
+  body.querySelector('#newsNew').addEventListener('click', () => {
+    const title = prompt('Заголовок:');
+    if (!title) return;
+    const content = prompt('Содержание:');
+    if (!content) return;
+    NewsManager.addPost(title, content, me);
+    render();
+  });
+
+  render();
+}
+
+/* ---------- DIARY ---------- */
+function openDiary() {
+  if (!OS.currentUser || OS.currentUser === 'guest') return alert('Войдите в систему');
+  const me = OS.currentUser;
+  const KEY = 'wasabi_diary_' + me;
+
+  let data = DB.get(KEY, { entries: [] });
+  const save = () => DB.set(KEY, data);
+
+  const win = OS.createWindow('Дневник — ' + me, 620, 460, `
+    <div class="split" style="height:100%">
+      <div class="left">
+        <button class="btn primary" id="diaryNew" style="margin-bottom:6px">+ Новая запись</button>
+        <div class="contact-list" id="diaryList"></div>
+      </div>
+      <div class="right">
+        <div class="form-row">
+          <label>Дата</label>
+          <input id="diaryDate">
+        </div>
+        <div class="form-row">
+          <label>Запись</label>
+          <textarea id="diaryContent" style="height:250px"></textarea>
+        </div>
+        <div style="display:flex;gap:6px">
+          <button class="btn primary" id="diarySave">Сохранить</button>
+          <button class="btn danger" id="diaryDelete">Удалить</button>
+        </div>
+      </div>
+    </div>
+  `);
+  const body = win.querySelector('.window-body');
+  const listEl = body.querySelector('#diaryList');
+  const dateEl = body.querySelector('#diaryDate');
+  const contentEl = body.querySelector('#diaryContent');
+
+  const renderList = () => {
+    listEl.innerHTML = data.entries.map((e, i) =>
+      `<div class="contact-item" data-i="${i}">${e.date}</div>`
+    ).join('') || '<div style="padding:8px;color:#888">Пусто</div>';
+    listEl.querySelectorAll('.contact-item').forEach(el => {
+      el.addEventListener('click', () => {
+        const e = data.entries[+el.dataset.i];
+        dateEl.value = e.date;
+        contentEl.value = e.content;
+      });
+    });
+  };
+
+  body.querySelector('#diaryNew').addEventListener('click', () => {
+    dateEl.value = new Date().toISOString().slice(0, 10);
+    contentEl.value = '';
+  });
+  body.querySelector('#diarySave').addEventListener('click', () => {
+    const d = dateEl.value.trim();
+    const c = contentEl.value.trim();
+    if (!d || !c) return alert('Заполните поля');
+    const idx = data.entries.findIndex(x => x.date === d);
+    if (idx >= 0) data.entries[idx].content = c;
+    else data.entries.push({ date: d, content: c });
+    save();
+    renderList();
+    OS.notify('Запись сохранена');
+  });
+  body.querySelector('#diaryDelete').addEventListener('click', () => {
+    const d = dateEl.value.trim();
+    data.entries = data.entries.filter(x => x.date !== d);
+    save();
+    renderList();
+    contentEl.value = '';
+  });
+
+  renderList();
+}
+
+/* ---------- CALCULATOR ---------- */
+function openCalculator() {
+  const win = OS.createWindow('Калькулятор', 260, 380, `
+    <div class="calc-display" id="calcDisplay">0</div>
+    <div class="calc-grid">
+      ${['7','8','9','/','4','5','6','*','1','2','3','-','0','C','=','+']
+        .map(k => `<button data-k="${k}" class="${'/*-+'.includes(k)?'op':(k==='='?'eq':'')}">${k}</button>`)
+        .join('')}
+    </div>
+  `);
+  const disp = win.querySelector('#calcDisplay');
+  const body = win.querySelector('.window-body');
+  body.querySelectorAll('.calc-grid button').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const k = btn.dataset.k;
+      if (k === 'C') disp.textContent = '0';
+      else if (k === '=') {
+        try { disp.textContent = Function('"use strict";return (' + disp.textContent + ')')(); }
+        catch { disp.textContent = 'Ошибка'; }
+      } else {
+        if (disp.textContent === '0') disp.textContent = k;
+        else disp.textContent += k;
+      }
+    });
+  });
+}
+
+/* ---------- TERMINAL ---------- */
+function openTerminal() {
+  const win = OS.createWindow('Терминал', 600, 400, `
+    <div class="terminal-output" id="termOut">WasabiOS Terminal\nВведите "help" для списка команд.\n</div>
+    <div class="terminal-input-row">
+      <span style="color:#0f0;font-family:monospace">$</span>
+      <input id="termIn" placeholder="команда...">
+    </div>
+  `);
+  const out = win.querySelector('#termOut');
+  const input = win.querySelector('#termIn');
+  const print = t => { out.textContent += t + '\n'; out.scrollTop = out.scrollHeight; };
+
+  let cwd = '/';
+  input.addEventListener('keydown', e => {
+    if (e.key !== 'Enter') return;
+    const cmd = input.value.trim();
+    input.value = '';
+    print('$ ' + cmd);
+    if (!cmd) return;
+    const [name, ...args] = cmd.split(/\s+/);
+    switch (name) {
+      case 'help': print('Команды: help, echo, date, ls, cd, pwd, clear, mkdir, cat'); break;
+      case 'echo': print(args.join(' ')); break;
+      case 'date': print(new Date().toString()); break;
+      case 'pwd':  print(cwd); break;
+      case 'ls': {
+        const fs = FileManager.load();
+        print((fs[cwd]?.children || []).join('  ') || '(пусто)');
+        break;
+      }
+      case 'cd': {
+        const t = args[0];
+        if (!t || t === '/') { cwd = '/'; break; }
+        const parts = cwd.split('/').filter(Boolean);
+        if (t === '..') parts.pop();
+        else parts.push(t);
+        cwd = '/' + parts.join('/');
+        if (cwd === '') cwd = '/';
+        break;
+      }
+      case 'mkdir': {
+        if (!args[0]) { print('usage: mkdir <name>'); break; }
+        const fs = FileManager.load();
+        const path = (cwd === '/' ? '/' : cwd + '/') + args[0];
+        if (fs[path]) { print('Уже существует'); break; }
+        fs[path] = { type: 'folder', children: [] };
+        fs[cwd].children.push(args[0]);
+        FileManager.save(fs);
+        break;
+      }
+      case 'cat': {
+        const fs = FileManager.load();
+        const path = (cwd === '/' ? '/' : cwd + '/') + args[0];
+        const node = fs[path];
+        print(node ? (node.content || '(пусто)') : 'Файл не найден');
+        break;
+      }
+      case 'clear': out.textContent = ''; break;
+      default: print('Неизвестная команда: ' + name);
+    }
+  });
+}
+
+/* ---------- SETTINGS ---------- */
+function openSettings() {
+  const settings = DB.get('wasabi_settings', { theme: 'light', wallpaper: null });
+  const win = OS.createWindow('Настройки', 500, 380, `
+    <div class="tabs">
+      <button class="tab active">Внешний вид</button>
+      <button class="tab">Система</button>
+    </div>
+    <div class="form-row">
+      <label>Тема</label>
+      <select id="setTheme">
+        <option value="light">Светлая</option>
+        <option value="dark">Тёмная</option>
+      </select>
+    </div>
+    <div class="form-row">
+      <label>URL обоев (ссылка на изображение)</label>
+      <input id="setWall" placeholder="https://..." value="${settings.wallpaper || ''}">
+    </div>
+    <div class="form-row">
+      <label>Цвет фона</label>
+      <input type="color" id="setColor" value="#008080">
+    </div>
+    <div style="display:flex;gap:6px">
+      <button class="btn primary" id="setSave">Сохранить</button>
+      <button class="btn gray" id="setCancel">Отмена</button>
+    </div>
+    <div style="margin-top:10px;font-size:12px;color:#666">Пользователь: ${OS.currentUser || 'Гость'}</div>
+  `);
+  const body = win.querySelector('.window-body');
+  body.querySelector('#setTheme').value = settings.theme;
+
+  body.querySelector('#setSave').addEventListener('click', () => {
+    const s = {
+      theme: body.querySelector('#setTheme').value,
+      wallpaper: body.querySelector('#setWall').value || null
+    };
+    DB.set('wasabi_settings', s);
+    OS.currentTheme = s.theme;
+    if (s.theme === 'dark') OS.desktop.classList.add('dark'); else OS.desktop.classList.remove('dark');
+    if (s.wallpaper) OS.desktop.style.backgroundImage = `url(${s.wallpaper})`;
+    else OS.desktop.style.backgroundImage = '';
+    OS.desktop.style.backgroundColor = body.querySelector('#setColor').value;
+    OS.applyThemeToAllWindows();
+    broadcastThemeToWasabiApps();
+    OS.notify('Настройки сохранены');
+  });
+  body.querySelector('#setCancel').addEventListener('click', () => OS.closeWindow(win));
+}
+
+/* ---------- APP STORE (магазин самой ОС) ---------- */
+function openAppStore() {
+  const win = OS.createWindow('📦 Магазин приложений ОС', 720, 560, `
+    <div style="margin-bottom:10px;display:flex;gap:8px;align-items:center">
+      <input id="asSearch" placeholder="🔎 Поиск..." style="flex:1;padding:6px;border:1px solid #ccc;border-radius:4px">
+      <select id="asCat" style="padding:6px;border:1px solid #ccc;border-radius:4px">
+        <option value="">Все категории</option>
+      </select>
+      <button class="btn info" id="asTabAvail">Не установлено</button>
+      <button class="btn" id="asTabInst">Установлено</button>
+    </div>
+    <div id="asList" style="display:grid;grid-template-columns:1fr 1fr;gap:10px;max-height:420px;overflow-y:auto"></div>
+  `);
+
+  const body = win.querySelector('.window-body');
+  const listEl = body.querySelector('#asList');
+  const searchEl = body.querySelector('#asSearch');
+  const catEl = body.querySelector('#asCat');
+  const tabAvail = body.querySelector('#asTabAvail');
+  const tabInst  = body.querySelector('#asTabInst');
+  let mode = 'available';
+
+  const cats = [...new Set(AppStore.listAll().map(a => a.category))];
+  cats.forEach(c => catEl.innerHTML += `<option value="${c}">${c}</option>`);
+
+  const render = () => {
+    const q = searchEl.value.toLowerCase();
+    const cat = catEl.value;
+    const source = mode === 'available' ? AppStore.listAvailable() : AppStore.listInstalled();
+    const apps = source.filter(a =>
+      (!q || a.name.toLowerCase().includes(q) || a.desc.toLowerCase().includes(q)) &&
+      (!cat || a.category === cat)
+    );
+
+    if (!apps.length) {
+      listEl.innerHTML = '<div style="grid-column:1/-1;text-align:center;color:#888;padding:20px">Ничего не найдено</div>';
+      return;
+    }
+
+    listEl.innerHTML = apps.map(a => `
+      <div class="store-card" data-id="${a.id}" style="border:1px solid #ddd;border-radius:8px;padding:12px;background:white;display:flex;flex-direction:column">
+        <div style="display:flex;gap:10px;align-items:center;margin-bottom:6px">
+          <div style="font-size:28px">${a.icon}</div>
+          <div>
+            <div style="font-weight:bold">${a.name}</div>
+            <div style="font-size:11px;color:#888">${a.category}</div>
+          </div>
+        </div>
+        <div style="font-size:12px;color:#444;flex:1">${a.desc}</div>
+        <div style="display:flex;gap:6px;margin-top:8px">
+          ${AppStore.isInstalled(a.id)
+            ? `<button class="btn primary" data-open="${a.id}">▶ Открыть</button>
+               ${a.builtin ? '' : `<button class="btn danger" data-del="${a.id}">Удалить</button>`}`
+            : `<button class="btn info" data-inst="${a.id}">⬇ Установить</button>`}
+        </div>
+      </div>
+    `).join('');
+
+    listEl.querySelectorAll('[data-inst]').forEach(b => b.addEventListener('click', () => {
+      AppStore.install(b.dataset.inst);
+      OS.notify(`Установлено: ${APP_STORE[b.dataset.inst].name}`);
+      render(); OS.renderStartMenu();
+    }));
+    listEl.querySelectorAll('[data-del]').forEach(b => b.addEventListener('click', () => {
+      if (!confirm(`Удалить "${APP_STORE[b.dataset.del].name}"?`)) return;
+      AppStore.uninstall(b.dataset.del);
+      OS.notify(`Удалено: ${APP_STORE[b.dataset.del].name}`);
+      render(); OS.renderStartMenu();
+    }));
+    listEl.querySelectorAll('[data-open]').forEach(b => b.addEventListener('click', () => {
+      APP_STORE[b.dataset.open].run();
+    }));
+  };
+
+  searchEl.addEventListener('input', render);
+  catEl.addEventListener('change', render);
+  tabAvail.addEventListener('click', () => {
+    mode = 'available';
+    tabAvail.className = 'btn info'; tabInst.className = 'btn';
+    render();
+  });
+  tabInst.addEventListener('click', () => {
+    mode = 'installed';
+    tabInst.className = 'btn info'; tabAvail.className = 'btn';
+    render();
+  });
+
+  render();
+}
+
+/* ================================================================
+   🛍️ WASABIAPPS — ВСТРОЕННЫЙ МАГАЗИН
+   ================================================================ */
+
+// Глобальная ссылка на активное окно WasabiApps (для отправки сообщений)
+const WasabiAppsBridge = {
+  activeIframe: null,
+
+  // Отправить тему в iframe
+  sendTheme(theme) {
+    if (!this.activeIframe) return;
+    try {
+      this.activeIframe.contentWindow.postMessage(
+        { type: 'wasabi-theme', theme },
+        '*'
+      );
+    } catch (e) { console.warn('postMessage theme failed:', e); }
+  },
+
+  // Отправить пользователя в iframe
+  sendUser(username, role) {
+    if (!this.activeIframe) return;
+    try {
+      this.activeIframe.contentWindow.postMessage(
+        { type: 'wasabi-user', username: username || 'Гость', role: role || 'guest' },
+        '*'
+      );
+    } catch (e) { console.warn('postMessage user failed:', e); }
+  },
+
+  // Отправить команду навигации
+  sendNavigate(section) {
+    if (!this.activeIframe) return;
+    try {
+      this.activeIframe.contentWindow.postMessage(
+        { type: 'wasabi-navigate', section },
+        '*'
+      );
+    } catch (e) { console.warn('postMessage navigate failed:', e); }
+  },
+
+  // Отправить поисковый запрос
+  sendSearch(query) {
+    if (!this.activeIframe) return;
+    try {
+      this.activeIframe.contentWindow.postMessage(
+        { type: 'wasabi-search', query },
+        '*'
+      );
+    } catch (e) { console.warn('postMessage search failed:', e); }
+  }
+};
+
+// Глобальные функции для синхронизации (вызываются из showLogin, openSettings)
+function broadcastThemeToWasabiApps() {
+  WasabiAppsBridge.sendTheme(OS.currentTheme);
+}
+function broadcastUserToWasabiApps() {
+  WasabiAppsBridge.sendUser(OS.currentUser, OS.userRole);
+}
+
+// Слушатель сообщений от iframe WasabiApps
+window.addEventListener('message', function (e) {
+  const data = e.data;
+  if (!data || typeof data !== 'object') return;
+
+  // iframe сообщает, что готов
+  if (data.type === 'wasabi-ready') {
+    // Отправляем текущее состояние
+    setTimeout(() => {
+      WasabiAppsBridge.sendTheme(OS.currentTheme);
+      WasabiAppsBridge.sendUser(OS.currentUser, OS.userRole);
+    }, 100);
+    return;
+  }
+
+  // iframe просит открыть внешний URL
+  if (data.type === 'wasabi-open-url' && data.url) {
+    window.open(data.url, '_blank', 'noopener');
+    return;
+  }
+
+  // iframe просит показать уведомление
+  if (data.type === 'wasabi-notify' && data.message) {
+    OS.notify('🛍️ ' + data.message);
+    return;
+  }
+
+  // iframe просит закрыть окно
+  if (data.type === 'wasabi-close') {
+    if (WasabiAppsBridge._currentWin) {
+      OS.closeWindow(WasabiAppsBridge._currentWin);
+      WasabiAppsBridge._currentWin = null;
+      WasabiAppsBridge.activeIframe = null;
+    }
+    return;
+  }
+});
+
+function openWasabiApps() {
+  const isDark = OS.currentTheme === 'dark';
+
+  const win = OS.createWindow('🛍️ WasabiApps — Магазин', 1180, 720, `
+    <div style="display:flex;flex-direction:column;height:100%;background:${isDark ? '#1a1a1a' : '#f5f5f5'};color:${isDark ? '#eee' : '#333'};margin:-10px">
+      <!-- Верхняя панель -->
+      <div style="display:flex;gap:6px;padding:8px;background:${isDark ? '#0f0f0f' : '#2d2d2d'};color:white;flex-wrap:wrap;align-items:center;border-bottom:1px solid ${isDark ? '#333' : '#444'}">
+        <div style="font-weight:bold;margin-right:10px;display:flex;align-items:center;gap:6px">
+          <span style="font-size:18px">🛍️</span> WasabiApps
+        </div>
+        <button class="btn" data-wa="store" style="padding:6px 12px;background:${isDark ? '#333' : '#444'}">🔥 Товары</button>
+        <button class="btn" data-wa="reviews" style="padding:6px 12px;background:${isDark ? '#333' : '#444'}">📹 Обзоры</button>
+        <button class="btn" data-wa="playlist" style="padding:6px 12px;background:${isDark ? '#333' : '#444'}">🎞️ Плейлист</button>
+        <button class="btn" data-wa="shorts" style="padding:6px 12px;background:${isDark ? '#333' : '#444'}">📱 Коротыши</button>
+        <button class="btn" data-wa="blog" style="padding:6px 12px;background:${isDark ? '#333' : '#444'}">📝 Блог</button>
+        <button class="btn" data-wa="community" style="padding:6px 12px;background:${isDark ? '#333' : '#444'}">👥 Сообщество</button>
+        <button class="btn" data-wa="notes" style="padding:6px 12px;background:${isDark ? '#333' : '#444'}">📓 Заметки</button>
+        <div style="flex:1"></div>
+        <input id="waSearch" placeholder="🔎 Поиск..." style="padding:6px 10px;border-radius:4px;border:none;width:180px;background:${isDark ? '#333' : 'white'};color:${isDark ? '#eee' : '#333'}">
+        <span id="waUserBadge" style="padding:4px 10px;background:${isDark ? '#333' : '#4CAF50'};border-radius:4px;font-size:12px">👤 Гость</span>
+        <button class="btn danger" id="waClose" style="padding:6px 12px">✕ Закрыть</button>
+      </div>
+
+      <!-- Контейнер iframe -->
+      <div style="flex:1;position:relative;overflow:hidden;background:${isDark ? '#1a1a1a' : 'white'}">
+        <iframe
+          id="waFrame"
+          src="about:blank"
+          style="width:100%;height:100%;border:none;display:block"
+          sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-modals allow-downloads"
+          allow="autoplay; fullscreen; encrypted-media"
+        ></iframe>
+        <div id="waLoader" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:${isDark ? '#1a1a1a' : '#f5f5f5'};flex-direction:column;gap:10px">
+          <div style="font-size:64px;animation:pulse 1.5s infinite">🛍️</div>
+          <div style="font-weight:bold;color:${isDark ? '#eee' : '#333'}">Загрузка WasabiApps...</div>
+          <div style="width:250px;height:4px;background:${isDark ? '#333' : '#ddd'};border-radius:2px;overflow:hidden">
+            <div id="waProgress" style="height:100%;width:0%;background:#4CAF50;transition:width 0.3s"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  `);
+
+  const body = win.querySelector('.window-body');
+  body.style.padding = '0';
+  body.style.overflow = 'hidden';
+
+  const iframe = body.querySelector('#waFrame');
+  const loader = body.querySelector('#waLoader');
+  const progress = body.querySelector('#waProgress');
+  const userBadge = body.querySelector('#waUserBadge');
+
+  // Устанавливаем бейдж пользователя
+  const displayName = OS.currentUser || 'Гость';
+  userBadge.textContent = '👤 ' + displayName;
+
+  // Запоминаем ссылки для bridge
+  WasabiAppsBridge.activeIframe = iframe;
+  WasabiAppsBridge._currentWin = win;
+
+  // URL магазина (замените на свой, если нужно)
+  const WASABIAPPS_URL = 'wasabiapps.html';
+
+  // Прогресс
+  let prog = 0;
+  const progTimer = setInterval(() => {
+    prog = Math.min(prog + 12, 90);
+    progress.style.width = prog + '%';
+  }, 100);
+
+  iframe.onload = () => {
+    clearInterval(progTimer);
+    progress.style.width = '100%';
+    setTimeout(() => { loader.style.display = 'none'; }, 300);
+    // После загрузки сразу отправляем тему и пользователя
+    setTimeout(() => {
+      WasabiAppsBridge.sendTheme(OS.currentTheme);
+      WasabiAppsBridge.sendUser(OS.currentUser, OS.userRole);
+    }, 200);
+  };
+
+  iframe.src = WASABIAPPS_URL;
+
+  // Навигация
+  body.querySelectorAll('[data-wa]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      body.querySelectorAll('[data-wa]').forEach(b => b.style.background = isDark ? '#333' : '#444');
+      btn.style.background = '#4CAF50';
+      WasabiAppsBridge.sendNavigate(btn.dataset.wa);
+    });
+  });
+  // Подсветим "Товары" по умолчанию
+  const firstBtn = body.querySelector('[data-wa="store"]');
+  if (firstBtn) firstBtn.style.background = '#4CAF50';
+
+  // Поиск
+  body.querySelector('#waSearch').addEventListener('input', (e) => {
+    WasabiAppsBridge.sendSearch(e.target.value);
+  });
+
+  // Закрытие
+  body.querySelector('#waClose').addEventListener('click', () => {
+    OS.closeWindow(win);
+    if (WasabiAppsBridge.activeIframe === iframe) {
+      WasabiAppsBridge.activeIframe = null;
+      WasabiAppsBridge._currentWin = null;
+    }
+  });
+
+  // Обновление bridge при смене темы/пользователя
+  win._onThemeChange = (newTheme) => {
+    // Перезагружать не будем — просто отправим сообщение
+    WasabiAppsBridge.sendTheme(newTheme);
+  };
+  win._onUserChange = (u, r) => {
+    userBadge.textContent = '👤 ' + (u || 'Гость');
+    WasabiAppsBridge.sendUser(u, r);
+  };
+}
+
+/* ================================================================
+   ПРИЛОЖЕНИЯ ИЗ МАГАЗИНА ОС
+   ================================================================ */
+
+/* ---------- 📝 ЗАМЕТКИ ---------- */
+const NotesApp = {
+  KEY: 'wasabi_notes',
+  open() {
+    let notes = DB.get(this.KEY, [{ id: 1, text: 'Первая заметка', color: '#fff9c4' }]);
+    const save = () => DB.set(this.KEY, notes);
+
+    const win = OS.createWindow('🗒️ Заметки', 620, 480, `
+      <div style="margin-bottom:8px">
+        <button class="btn primary" id="ntNew">+ Новая заметка</button>
+      </div>
+      <div id="ntList" style="display:grid;grid-template-columns:1fr 1fr;gap:10px"></div>
+    `);
+    const body = win.querySelector('.window-body');
+    const listEl = body.querySelector('#ntList');
+
+    const render = () => {
+      listEl.innerHTML = notes.map(n => `
+        <div style="border:1px solid #ddd;border-radius:8px;padding:10px;background:${n.color};min-height:100px;display:flex;flex-direction:column">
+          <textarea data-id="${n.id}" style="flex:1;border:none;background:transparent;resize:none;font-family:inherit;outline:none;color:#333">${n.text.replace(/</g,'&lt;')}</textarea>
+          <div style="display:flex;gap:6px;margin-top:6px">
+            <input type="color" data-col="${n.id}" value="${n.color}" style="width:30px;height:24px;border:none;background:none;cursor:pointer">
+            <button class="btn danger" data-del="${n.id}" style="padding:2px 8px;font-size:12px">🗑</button>
+          </div>
+        </div>
+      `).join('');
+
+      listEl.querySelectorAll('textarea[data-id]').forEach(t => {
+        t.addEventListener('input', () => {
+          const n = notes.find(x => x.id === +t.dataset.id);
+          if (n) { n.text = t.value; save(); }
+        });
+      });
+      listEl.querySelectorAll('input[data-col]').forEach(c => {
+        c.addEventListener('input', () => {
+          const n = notes.find(x => x.id === +c.dataset.col);
+          if (n) { n.color = c.value; save(); render(); }
+        });
+      });
+      listEl.querySelectorAll('[data-del]').forEach(b => {
+        b.addEventListener('click', () => {
+          notes = notes.filter(x => x.id !== +b.dataset.del);
+          save(); render();
+        });
+      });
+    };
+
+    body.querySelector('#ntNew').addEventListener('click', () => {
+      notes.unshift({ id: Date.now(), text: '', color: '#fff9c4' });
+      save(); render();
+    });
+    render();
+  }
+};
+
+/* ---------- ⏰ ЧАСЫ И ТАЙМЕР ---------- */
+const ClockApp = {
+  open() {
+    let seconds = 0, timerInterval = null, mode = 'stopwatch';
+
+    const win = OS.createWindow('⏰ Часы и таймер', 380, 320, `
+      <div style="text-align:center">
+        <div id="ckTime" style="font-size:48px;font-family:monospace;margin:10px 0">00:00:00</div>
+        <div style="display:flex;gap:6px;justify-content:center;margin-bottom:12px">
+          <button class="btn info" id="ckMode">Режим: Секундомер</button>
+        </div>
+        <div id="ckTimerSet" style="display:none;margin-bottom:10px">
+          <label style="font-size:12px">Секунд: </label>
+          <input type="number" id="ckSec" value="60" min="1" style="width:80px;padding:4px;border:1px solid #ccc;border-radius:4px">
+        </div>
+        <div style="display:flex;gap:6px;justify-content:center">
+          <button class="btn primary" id="ckStart">▶ Старт</button>
+          <button class="btn warn" id="ckPause">⏸ Пауза</button>
+          <button class="btn danger" id="ckReset">⟲ Сброс</button>
+        </div>
+      </div>
+    `);
+    const body = win.querySelector('.window-body');
+    const timeEl = body.querySelector('#ckTime');
+    const modeEl = body.querySelector('#ckMode');
+    const timerSet = body.querySelector('#ckTimerSet');
+
+    const fmt = s => {
+      const h = String(Math.floor(s / 3600)).padStart(2, '0');
+      const m = String(Math.floor(s % 3600 / 60)).padStart(2, '0');
+      const sec = String(s % 60).padStart(2, '0');
+      return `${h}:${m}:${sec}`;
+    };
+    const tick = () => {
+      if (mode === 'stopwatch') { seconds++; timeEl.textContent = fmt(seconds); }
+      else {
+        seconds--;
+        timeEl.textContent = fmt(seconds);
+        if (seconds <= 0) { clearInterval(timerInterval); timerInterval = null; alert('⏰ Время вышло!'); }
+      }
+    };
+    const start = () => { if (timerInterval) return; timerInterval = setInterval(tick, 1000); };
+    const pause = () => { clearInterval(timerInterval); timerInterval = null; };
+    const reset = () => { pause(); seconds = mode === 'stopwatch' ? 0 : +body.querySelector('#ckSec').value; timeEl.textContent = fmt(seconds); };
+
+    body.querySelector('#ckStart').addEventListener('click', start);
+    body.querySelector('#ckPause').addEventListener('click', pause);
+    body.querySelector('#ckReset').addEventListener('click', reset);
+    modeEl.addEventListener('click', () => {
+      pause();
+      if (mode === 'stopwatch') {
+        mode = 'timer'; modeEl.textContent = 'Режим: Таймер';
+        timerSet.style.display = 'block';
+        seconds = +body.querySelector('#ckSec').value;
+      } else {
+        mode = 'stopwatch'; modeEl.textContent = 'Режим: Секундомер';
+        timerSet.style.display = 'none';
+        seconds = 0;
+      }
+      timeEl.textContent = fmt(seconds);
+    });
+  }
+};
+
+/* ---------- ✅ СПИСОК ДЕЛ ---------- */
+const TodoApp = {
+  KEY: 'wasabi_todo',
+  open() {
+    const me = OS.currentUser || 'guest';
+    const key = this.KEY + '_' + me;
+    let tasks = DB.get(key, []);
+    const save = () => DB.set(key, tasks);
+
+    const win = OS.createWindow('✅ Список дел', 480, 460, `
+      <div style="display:flex;gap:6px;margin-bottom:10px">
+        <input id="tdInput" placeholder="Новая задача..." style="flex:1;padding:6px;border:1px solid #ccc;border-radius:4px">
+        <button class="btn primary" id="tdAdd">+ Добавить</button>
+      </div>
+      <div id="tdStats" style="font-size:12px;color:#666;margin-bottom:8px"></div>
+      <div id="tdList"></div>
+    `);
+    const body = win.querySelector('.window-body');
+    const listEl = body.querySelector('#tdList');
+    const statsEl = body.querySelector('#tdStats');
+    const inputEl = body.querySelector('#tdInput');
+
+    const render = () => {
+      const done = tasks.filter(t => t.done).length;
+      statsEl.textContent = `Выполнено: ${done}/${tasks.length}`;
+      if (!tasks.length) { listEl.innerHTML = '<div style="text-align:center;color:#888;padding:20px">Задач нет</div>'; return; }
+      listEl.innerHTML = tasks.map((t, i) => `
+        <div style="display:flex;align-items:center;gap:8px;padding:8px;border-bottom:1px solid #eee">
+          <input type="checkbox" data-i="${i}" ${t.done ? 'checked' : ''}>
+          <span style="flex:1;${t.done ? 'text-decoration:line-through;color:#888' : ''}">${t.text.replace(/</g,'&lt;')}</span>
+          <button class="btn danger" data-del="${i}" style="padding:2px 8px;font-size:12px">🗑</button>
+        </div>
+      `).join('');
+      listEl.querySelectorAll('input[type=checkbox]').forEach(cb => {
+        cb.addEventListener('change', () => { tasks[+cb.dataset.i].done = cb.checked; save(); render(); });
+      });
+      listEl.querySelectorAll('[data-del]').forEach(b => {
+        b.addEventListener('click', () => { tasks.splice(+b.dataset.del, 1); save(); render(); });
+      });
+    };
+    const add = () => {
+      const t = inputEl.value.trim();
+      if (!t) return;
+      tasks.push({ text: t, done: false });
+      inputEl.value = '';
+      save(); render();
+    };
+    body.querySelector('#tdAdd').addEventListener('click', add);
+    inputEl.addEventListener('keydown', e => { if (e.key === 'Enter') add(); });
+    render();
+  }
+};
+
+/* ---------- 🎨 РИСОВАЛКА ---------- */
+const PaintApp = {
+  open() {
+    const win = OS.createWindow('🎨 Рисовалка', 700, 520, `
+      <div style="display:flex;gap:8px;align-items:center;margin-bottom:8px">
+        <input type="color" id="ptColor" value="#000000" style="width:40px;height:32px;border:none;cursor:pointer">
+        <input type="range" id="ptSize" min="1" max="30" value="4" style="width:120px">
+        <span id="ptSizeLabel">4 px</span>
+        <button class="btn" id="ptEraser">🧽 Ластик</button>
+        <button class="btn danger" id="ptClear">🗑 Очистить</button>
+        <button class="btn primary" id="ptSave">💾 Скачать PNG</button>
+      </div>
+      <canvas id="ptCanvas" width="660" height="400" style="border:1px solid #ccc;border-radius:4px;cursor:crosshair;background:white"></canvas>
+    `);
+    const body = win.querySelector('.window-body');
+    const canvas = body.querySelector('#ptCanvas');
+    const ctx = canvas.getContext('2d');
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+
+    let drawing = false, erase = false;
+    const colorEl = body.querySelector('#ptColor');
+    const sizeEl  = body.querySelector('#ptSize');
+
+    sizeEl.addEventListener('input', () => {
+      body.querySelector('#ptSizeLabel').textContent = sizeEl.value + ' px';
+    });
+    body.querySelector('#ptEraser').addEventListener('click', () => {
+      erase = !erase;
+      body.querySelector('#ptEraser').classList.toggle('info', erase);
+    });
+    body.querySelector('#ptClear').addEventListener('click', () => {
+      if (confirm('Очистить холст?')) ctx.clearRect(0, 0, canvas.width, canvas.height);
+    });
+    body.querySelector('#ptSave').addEventListener('click', () => {
+      const a = document.createElement('a');
+      a.download = 'drawing.png';
+      a.href = canvas.toDataURL();
+      a.click();
+    });
+
+    const pos = e => {
+      const r = canvas.getBoundingClientRect();
+      return { x: e.clientX - r.left, y: e.clientY - r.top };
+    };
+    canvas.addEventListener('mousedown', e => {
+      drawing = true;
+      const p = pos(e);
+      ctx.beginPath(); ctx.moveTo(p.x, p.y);
+    });
+    canvas.addEventListener('mousemove', e => {
+      if (!drawing) return;
+      const p = pos(e);
+      ctx.strokeStyle = erase ? '#ffffff' : colorEl.value;
+      ctx.lineWidth = erase ? +sizeEl.value * 3 : +sizeEl.value;
+      ctx.lineTo(p.x, p.y);
+      ctx.stroke();
+    });
+    window.addEventListener('mouseup', () => drawing = false);
+  }
+};
+
+/* ---------- 💱 КОНВЕРТЕР ВАЛЮТ ---------- */
+const ConverterApp = {
+  RATES: { RUB: 1, USD: 0.011, EUR: 0.010, KZT: 5.0, BYN: 0.035, UAH: 0.45 },
+  open() {
+    const currencies = Object.keys(this.RATES);
+    const win = OS.createWindow('💱 Конвертер валют', 420, 320, `
+      <div class="form-row">
+        <label>Сумма</label>
+        <input type="number" id="cvAmount" value="1000">
+      </div>
+      <div class="form-row">
+        <label>Из</label>
+        <select id="cvFrom">${currencies.map(c => `<option${c === 'RUB' ? ' selected' : ''}>${c}</option>`).join('')}</select>
+      </div>
+      <div class="form-row">
+        <label>В</label>
+        <select id="cvTo">${currencies.map(c => `<option${c === 'USD' ? ' selected' : ''}>${c}</option>`).join('')}</select>
+      </div>
+      <button class="btn primary" id="cvGo" style="width:100%">Перевести</button>
+      <div id="cvResult" style="margin-top:14px;font-size:20px;text-align:center;font-weight:bold;color:#2196F3"></div>
+    `);
+    const body = win.querySelector('.window-body');
+    const convert = () => {
+      const amt = parseFloat(body.querySelector('#cvAmount').value) || 0;
+      const from = body.querySelector('#cvFrom').value;
+      const to   = body.querySelector('#cvTo').value;
+      const rub = amt / this.RATES[from];
+      const res = rub * this.RATES[to];
+      body.querySelector('#cvResult').textContent = `${res.toFixed(2)} ${to}`;
+    };
+    body.querySelector('#cvGo').addEventListener('click', convert);
+    ['#cvAmount', '#cvFrom', '#cvTo'].forEach(s => body.querySelector(s).addEventListener('input', convert));
+    convert();
+  }
+};
+
+/* ---------- 🔐 ГЕНЕРАТОР ПАРОЛЕЙ ---------- */
+const PasswordApp = {
+  open() {
+    const win = OS.createWindow('🔐 Генератор паролей', 480, 400, `
+      <div class="form-row">
+        <label>Длина: <span id="pgLenLabel">16</span></label>
+        <input type="range" id="pgLen" min="4" max="64" value="16" style="width:100%">
+      </div>
+      <div class="form-row"><label><input type="checkbox" id="pgUpper" checked> Заглавные буквы</label></div>
+      <div class="form-row"><label><input type="checkbox" id="pgLower" checked> Строчные буквы</label></div>
+      <div class="form-row"><label><input type="checkbox" id="pgDigits" checked> Цифры</label></div>
+      <div class="form-row"><label><input type="checkbox" id="pgSymbols" checked> Символы</label></div>
+      <button class="btn primary" id="pgGen" style="width:100%">🔁 Сгенерировать</button>
+      <div id="pgOut" style="margin-top:12px;padding:10px;background:#f5f5f5;border-radius:6px;font-family:monospace;font-size:15px;word-break:break-all;text-align:center;color:#333"></div>
+      <button class="btn info" id="pgCopy" style="width:100%;margin-top:8px">📋 Копировать</button>
+    `);
+    const body = win.querySelector('.window-body');
+    body.querySelector('#pgLen').addEventListener('input', e => {
+      body.querySelector('#pgLenLabel').textContent = e.target.value;
+    });
+    const gen = () => {
+      let chars = '';
+      if (body.querySelector('#pgUpper').checked)   chars += 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+      if (body.querySelector('#pgLower').checked)   chars += 'abcdefghijklmnopqrstuvwxyz';
+      if (body.querySelector('#pgDigits').checked)  chars += '0123456789';
+      if (body.querySelector('#pgSymbols').checked) chars += '!@#$%^&*()_+-=[]{}|;:,.<>?';
+      if (!chars) { body.querySelector('#pgOut').textContent = 'Выберите хотя бы один набор'; return; }
+      const len = +body.querySelector('#pgLen').value;
+      const arr = new Uint32Array(len);
+      crypto.getRandomValues(arr);
+      const pwd = Array.from(arr).map(n => chars[n % chars.length]).join('');
+      body.querySelector('#pgOut').textContent = pwd;
+    };
+    body.querySelector('#pgGen').addEventListener('click', gen);
+    body.querySelector('#pgCopy').addEventListener('click', () => {
+      const t = body.querySelector('#pgOut').textContent;
+      if (t) navigator.clipboard.writeText(t).then(() => OS.notify('Пароль скопирован'));
+    });
+    gen();
+  }
+};
+
+/* ---------- 🐍 ЗМЕЙКА ---------- */
+const SnakeApp = {
+  open() {
+    const size = 20, cells = 20;
+    const win = OS.createWindow('🐍 Змейка', 480, 540, `
+      <div style="text-align:center;margin-bottom:6px">
+        Очки: <b id="snScore">0</b> &nbsp;|&nbsp; Рекорд: <b id="snBest">0</b>
+      </div>
+      <canvas id="snCanvas" width="400" height="400" style="border:1px solid #ccc;background:#111;border-radius:4px;display:block;margin:0 auto"></canvas>
+      <div style="text-align:center;margin-top:8px">
+        <button class="btn primary" id="snStart">▶ Старт / Заново</button>
+        <span style="font-size:12px;color:#666;margin-left:10px">Управление: ← ↑ → ↓</span>
+      </div>
+    `);
+    const body = win.querySelector('.window-body');
+    const canvas = body.querySelector('#snCanvas');
+    const ctx = canvas.getContext('2d');
+    const me = OS.currentUser || 'guest';
+    const bestKey = 'wasabi_snake_best_' + me;
+    let best = DB.get(bestKey, 0);
+    body.querySelector('#snBest').textContent = best;
+
+    let snake, dir, food, score, interval, alive;
+
+    const reset = () => {
+      snake = [{ x: 10, y: 10 }, { x: 9, y: 10 }, { x: 8, y: 10 }];
+      dir = { x: 1, y: 0 };
+      score = 0;
+      alive = true;
+      body.querySelector('#snScore').textContent = 0;
+      spawnFood();
+      clearInterval(interval);
+      interval = setInterval(step, 110);
+      draw();
+    };
+    const spawnFood = () => {
+      do { food = { x: Math.floor(Math.random() * cells), y: Math.floor(Math.random() * cells) }; }
+      while (snake.some(s => s.x === food.x && s.y === food.y));
+    };
+    const draw = () => {
+      ctx.fillStyle = '#111'; ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.fillStyle = '#f44336';
+      ctx.fillRect(food.x * size, food.y * size, size - 1, size - 1);
+      snake.forEach((s, i) => {
+        ctx.fillStyle = i === 0 ? '#8bc34a' : '#4CAF50';
+        ctx.fillRect(s.x * size, s.y * size, size - 1, size - 1);
+      });
+    };
+    const step = () => {
+      if (!alive) return;
+      const head = { x: snake[0].x + dir.x, y: snake[0].y + dir.y };
+      if (head.x < 0 || head.y < 0 || head.x >= cells || head.y >= cells || snake.some(s => s.x === head.x && s.y === head.y)) {
+        alive = false;
+        clearInterval(interval);
+        if (score > best) { best = score; DB.set(bestKey, best); body.querySelector('#snBest').textContent = best; }
+        setTimeout(() => alert('Игра окончена! Очки: ' + score), 50);
+        return;
+      }
+      snake.unshift(head);
+      if (head.x === food.x && head.y === food.y) {
+        score += 10;
+        body.querySelector('#snScore').textContent = score;
+        spawnFood();
+      } else {
+        snake.pop();
+      }
+      draw();
+    };
+
+    const onKey = e => {
+      const k = e.key;
+      if (['ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(k)) e.preventDefault();
+      if (k === 'ArrowUp'    && dir.y !==  1) dir = { x: 0, y: -1 };
+      if (k === 'ArrowDown'  && dir.y !== -1) dir = { x: 0, y:  1 };
+      if (k === 'ArrowLeft'  && dir.x !==  1) dir = { x: -1, y: 0 };
+      if (k === 'ArrowRight' && dir.x !== -1) dir = { x:  1, y: 0 };
+    };
+    document.addEventListener('keydown', onKey);
+
+    body.querySelector('#snStart').addEventListener('click', reset);
+
+    const origClose = win.querySelector('.close');
+    origClose.addEventListener('click', () => document.removeEventListener('keydown', onKey));
+
+    draw();
+  }
+};
+
+/* ---------- 📈 КУРС ВАЛЮТ ---------- */
+const CurrencyApp = {
+  BASE: { USD: 90, EUR: 100, KZT: 0.19, BYN: 28, UAH: 2.2 },
+  open() {
+    const win = OS.createWindow('📈 Курс валют (демо)', 480, 400, `
+      <div style="font-size:12px;color:#666;margin-bottom:8px">
+        Демонстрационные котировки. Обновляются каждые 3 секунды.
+      </div>
+      <div id="curList"></div>
+    `);
+    const body = win.querySelector('.window-body');
+    const listEl = body.querySelector('#curList');
+
+    const render = () => {
+      const rates = {};
+      for (const [k, v] of Object.entries(this.BASE)) {
+        rates[k] = v * (1 + (Math.random() - 0.5) * 0.02);
+      }
+      listEl.innerHTML = Object.entries(rates).map(([k, v]) => `
+        <div style="display:flex;justify-content:space-between;padding:10px;border-bottom:1px solid #eee">
+          <b>${k}/RUB</b>
+          <span style="color:${v > this.BASE[k] ? '#4CAF50' : '#f44336'}">
+            ${v.toFixed(2)} ${v > this.BASE[k] ? '▲' : '▼'}
+          </span>
+        </div>
+      `).join('');
+    };
+    render();
+    setInterval(render, 3000);
+  }
+};
+
+/* ---------- 🌤️ ПОГОДА (ДЕМО) ---------- */
+const WeatherApp = {
+  open() {
+    const cities = ['Москва', 'Санкт-Петербург', 'Казань', 'Новосибирск', 'Екатеринбург'];
+    const icons  = ['☀️', '⛅', '☁️', '🌧️', '❄️', '🌩️'];
+    const win = OS.createWindow('🌤️ Погода (демо)', 420, 380, `
+      <div style="text-align:center;margin-bottom:10px">
+        <div style="font-size:64px" id="wIcon">☀️</div>
+        <div style="font-size:36px;font-weight:bold" id="wTemp">+15°C</div>
+        <div style="color:#666" id="wCity">Москва</div>
+      </div>
+      <div style="display:flex;gap:6px;justify-content:center;flex-wrap:wrap">
+        ${cities.map(c => `<button class="btn" data-city="${c}">${c}</button>`).join('')}
+      </div>
+      <div style="margin-top:14px;padding:10px;background:#f5f5f5;border-radius:6px;font-size:12px;color:#666;text-align:center">
+        Это демонстрационные данные, генерируются случайно.
+      </div>
+    `);
+    const body = win.querySelector('.window-body');
+    const update = city => {
+      const temp = Math.round(-10 + Math.random() * 35);
+      const icon = icons[Math.floor(Math.random() * icons.length)];
+      body.querySelector('#wIcon').textContent = icon;
+      body.querySelector('#wTemp').textContent = (temp >= 0 ? '+' : '') + temp + '°C';
+      body.querySelector('#wCity').textContent = city;
+    };
+    body.querySelectorAll('[data-city]').forEach(b => {
+      b.addEventListener('click', () => update(b.dataset.city));
+    });
+    update('Москва');
+    setInterval(() => update(body.querySelector('#wCity').textContent), 8000);
+  }
+};
+
+/* ================================================================
+   BOOT
+   ================================================================ */
+(async function boot() {
+  const bar = document.getElementById('splashBar');
+  for (let i = 0; i <= 100; i += 10) {
+    bar.style.width = i + '%';
+    await new Promise(r => setTimeout(r, 60));
+  }
+
+  await AccountManager.init();
+  Messenger.init();
+  NewsManager.init();
+  FileManager.init();
+  AppStore.init();
+
+  OS.init();
+
+  document.getElementById('splash').style.display = 'none';
+
+  showLogin();
+})();
+</script>
+</body>
+</html>

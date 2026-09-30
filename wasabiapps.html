@@ -1,0 +1,4256 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>WasabiApps - Магазин приложений и видеообзоры</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Библиотека для генерации PDF (для заметок) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            overflow-x: hidden;
+            transition: background 0.3s ease;
+        }
+
+        .main-app {
+            display: none;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px 10px;
+        }
+
+        .header {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 15px;
+            margin-bottom: 20px;
+            backdrop-filter: blur(5px);
+            position: sticky;
+            top: 10px;
+            z-index: 100;
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+        }
+
+        .logo-icon {
+            font-size: 2rem;
+            color: #4CAF50;
+        }
+
+        .logo-text {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .nav-buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 25px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 14px;
+        }
+
+        .btn-primary { background: #4CAF50; color: white; }
+        .btn-secondary { background: #2196F3; color: white; }
+        .btn-warning { background: #FF9800; color: white; }
+        .btn-music { background: #9C27B0; color: white; }
+        .btn-book { background: #795548; color: white; }
+        .btn-review { background: #E91E63; color: white; }
+        .btn-shorts { background: #FF5722; color: white; }
+        .btn-android { background: #4CAF50; color: white; }
+        .btn-desktop { background: #2196F3; color: white; }
+        .btn-web { background: #00BCD4; color: white; }
+        .btn-blog { background: #3F51B5; color: white; }
+        .btn-note { background: #607D8B; color: white; }
+        .btn-playlist { background: #009688; color: white; }
+        .btn-community { background: #00A896; color: white; }
+        .btn:hover { transform: translateY(-2px); box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2); }
+
+        .hero {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 30px;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .hero h1 {
+            font-size: 2rem;
+            margin-bottom: 15px;
+            color: #333;
+        }
+
+        .platform-buttons {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+
+        .reviews-section {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 20px;
+        }
+
+        .section-title {
+            font-size: 1.8rem;
+            color: #333;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            border-bottom: 3px solid #E91E63;
+            padding-bottom: 10px;
+        }
+
+        .reviews-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 25px;
+        }
+
+        .review-card {
+            background: white;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease;
+            cursor: pointer;
+        }
+
+        .review-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .review-video {
+            position: relative;
+            padding-bottom: 56.25%;
+            height: 0;
+            background: #000;
+        }
+
+        .review-video iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
+        .review-content {
+            padding: 20px;
+        }
+
+        .review-title {
+            font-size: 1.3rem;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .review-meta {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 12px;
+            font-size: 0.85rem;
+            color: #888;
+        }
+
+        .review-excerpt {
+            color: #666;
+            line-height: 1.5;
+            margin-bottom: 15px;
+        }
+
+        .read-more {
+            color: #E91E63;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.9rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            cursor: pointer;
+        }
+
+        /* Стили для страницы Коротыши */
+        .shorts-section {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 20px;
+        }
+
+        .shorts-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 25px;
+            justify-items: center;
+        }
+
+        .short-card {
+            background: #0f0f0f;
+            border-radius: 20px;
+            overflow: hidden;
+            width: 100%;
+            max-width: 320px;
+            cursor: pointer;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+        }
+
+        .short-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 28px rgba(0,0,0,0.3);
+        }
+
+        .short-video-container {
+            position: relative;
+            width: 100%;
+            aspect-ratio: 9 / 16;
+            background: #000;
+            overflow: hidden;
+        }
+
+        .short-video-container iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+            pointer-events: none;
+        }
+
+        .short-info {
+            padding: 12px;
+            background: linear-gradient(0deg, #1a1a1a, #0f0f0f);
+        }
+
+        .short-title {
+            color: white;
+            font-weight: bold;
+            font-size: 0.95rem;
+            margin-bottom: 6px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .short-meta {
+            color: #aaa;
+            font-size: 0.7rem;
+            display: flex;
+            gap: 12px;
+        }
+
+        .badge-short {
+            background: #FF5722;
+            color: white;
+            font-size: 0.65rem;
+            padding: 2px 6px;
+            border-radius: 20px;
+        }
+
+        /* Вертикальный плеер для коротышей */
+        .shorts-player-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #000;
+            z-index: 40000;
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .shorts-player-overlay.active {
+            display: flex;
+        }
+
+        .shorts-close-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(0,0,0,0.6);
+            border: none;
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+            z-index: 10;
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(5px);
+        }
+
+        .shorts-player-wrapper {
+            width: 100%;
+            max-width: 400px;
+            margin: 0 auto;
+            position: relative;
+        }
+
+        .shorts-player-wrapper iframe {
+            width: 100%;
+            aspect-ratio: 9 / 16;
+            border: none;
+        }
+
+        .shorts-nav {
+            position: absolute;
+            right: -50px;
+            top: 50%;
+            transform: translateY(-50%);
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .shorts-nav button {
+            background: rgba(255,255,255,0.2);
+            border: none;
+            color: white;
+            font-size: 28px;
+            cursor: pointer;
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            backdrop-filter: blur(4px);
+        }
+
+        @media (max-width: 768px) {
+            .shorts-nav { right: 10px; }
+            .shorts-nav button { width: 36px; height: 36px; font-size: 20px; }
+        }
+
+        /* YouTube-подобная страница видео */
+        .video-page-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #0f0f0f;
+            z-index: 30000;
+            overflow-y: auto;
+            display: none;
+        }
+
+        .video-page-overlay.active {
+            display: block;
+        }
+
+        .video-page-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px 24px;
+        }
+
+        .video-page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .video-page-close-btn {
+            background: rgba(255,255,255,0.1);
+            border: none;
+            color: white;
+            font-size: 18px;
+            cursor: pointer;
+            padding: 8px 16px;
+            border-radius: 40px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .video-page-close-btn:hover {
+            background: rgba(255,255,255,0.2);
+        }
+
+        .video-layout {
+            display: flex;
+            gap: 24px;
+            flex-wrap: wrap;
+        }
+
+        .video-main {
+            flex: 2;
+            min-width: 280px;
+        }
+
+        .video-player-wrapper {
+            width: 100%;
+            background: #000;
+            border-radius: 16px;
+            overflow: hidden;
+        }
+
+        .video-player-wrapper iframe {
+            width: 100%;
+            aspect-ratio: 16 / 9;
+            border: none;
+        }
+
+        .video-info {
+            margin-top: 16px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid #272727;
+        }
+
+        .video-info h2 {
+            color: white;
+            font-size: 1.4rem;
+            margin-bottom: 8px;
+        }
+
+        .video-meta {
+            display: flex;
+            gap: 20px;
+            color: #aaa;
+            font-size: 0.85rem;
+            margin: 12px 0;
+        }
+
+        .video-description {
+            color: #ddd;
+            line-height: 1.5;
+            background: rgba(255,255,255,0.05);
+            padding: 14px;
+            border-radius: 12px;
+            margin-top: 12px;
+        }
+
+        .recommendations-sidebar {
+            flex: 1;
+            min-width: 300px;
+        }
+
+        .recommendations-title {
+            color: white;
+            font-size: 1.2rem;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .rec-video-card {
+            display: flex;
+            gap: 12px;
+            background: #1a1a1a;
+            border-radius: 12px;
+            padding: 10px;
+            margin-bottom: 12px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .rec-video-card:hover {
+            background: #272727;
+        }
+
+        .rec-thumb {
+            width: 168px;
+            flex-shrink: 0;
+            background: #000;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .rec-thumb iframe {
+            width: 100%;
+            height: 94px;
+            pointer-events: none;
+            border: none;
+        }
+
+        .rec-info h4 {
+            color: white;
+            font-size: 0.9rem;
+            margin-bottom: 6px;
+        }
+
+        .rec-meta {
+            color: #aaa;
+            font-size: 0.75rem;
+        }
+
+        @media (max-width: 768px) {
+            .video-layout { flex-direction: column; }
+            .rec-thumb { width: 120px; }
+            .filter-row { flex-direction: column; }
+            .apps-grid { grid-template-columns: 1fr; }
+            .reviews-grid { grid-template-columns: 1fr; }
+            .shorts-grid { grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); }
+        }
+
+        .filters {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+
+        .filter-row {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            flex: 1;
+            min-width: 120px;
+        }
+
+        .filter-group label {
+            font-weight: 600;
+            color: #333;
+            font-size: 12px;
+        }
+
+        select, input {
+            padding: 8px 12px;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+
+        .apps-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .app-card {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .app-card:hover {
+            transform: translateY(-3px);
+        }
+
+        .app-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 10px;
+            flex-wrap: wrap;
+        }
+
+        .app-title {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 8px;
+        }
+
+        .app-price {
+            font-size: 1.1rem;
+            font-weight: bold;
+            color: #4CAF50;
+        }
+
+        .app-description {
+            color: #666;
+            line-height: 1.4;
+            margin-bottom: 12px;
+            font-size: 0.9rem;
+        }
+
+        .app-details {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+
+        .app-detail {
+            display: flex;
+            align-items: center;
+            gap: 3px;
+            font-size: 12px;
+            color: #666;
+        }
+
+        .app-actions {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .btn-small {
+            padding: 6px 12px;
+            font-size: 11px;
+        }
+
+        .footer {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .badge {
+            padding: 2px 6px;
+            border-radius: 10px;
+            font-size: 10px;
+            font-weight: bold;
+            margin-left: 5px;
+            display: inline-block;
+        }
+
+        .badge-new { background: #4CAF50; color: white; }
+        .badge-popular { background: #FF9800; color: white; }
+        .badge-music { background: #9C27B0; color: white; }
+        .badge-book { background: #795548; color: white; }
+        .badge-android { background: #4CAF50; color: white; }
+        .badge-desktop { background: #2196F3; color: white; }
+        .badge-web { background: #00BCD4; color: white; }
+
+        .section {
+            display: none;
+        }
+
+        .section.active {
+            display: block;
+        }
+
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(5px);
+            z-index: 20000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            visibility: hidden;
+            opacity: 0;
+            transition: all 0.3s ease;
+        }
+
+        .modal-overlay.active {
+            visibility: visible;
+            opacity: 1;
+        }
+
+        .modal-container {
+            background: white;
+            width: 90%;
+            max-width: 700px;
+            border-radius: 20px;
+            overflow: hidden;
+        }
+
+        .modal-header {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 28px;
+            cursor: pointer;
+        }
+
+        .modal-body {
+            padding: 25px;
+            max-height: 60vh;
+            overflow-y: auto;
+        }
+
+        .splash-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            z-index: 9999;
+            transition: opacity 0.8s;
+        }
+
+        .splash-container.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .splash-card {
+            width: 90%;
+            max-width: 500px;
+            border-radius: 30px;
+            background: rgba(255, 255, 255, 0.98);
+            padding: 50px 40px;
+            text-align: center;
+            box-shadow: 0 30px 60px rgba(0,0,0,0.3);
+            animation: fadeInUp 1s;
+        }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .logo-animation {
+            width: 180px;
+            height: 180px;
+            margin: 0 auto 30px;
+        }
+
+        .pulse-circle {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #4CAF50, #2196F3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%,100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        .pulse-circle span {
+            font-size: 4rem;
+            font-weight: bold;
+            color: white;
+        }
+
+        .splash-title {
+            font-size: 2rem;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 15px;
+        }
+
+        .progress-container {
+            width: 100%;
+            height: 8px;
+            background: #eee;
+            border-radius: 10px;
+            margin: 30px 0;
+            overflow: hidden;
+        }
+
+        .progress-bar {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, #4CAF50, #2196F3);
+            animation: progressLoad 3s forwards;
+        }
+
+        @keyframes progressLoad {
+            0% { width: 0%; }
+            100% { width: 100%; }
+        }
+
+        .skip-button {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            padding: 10px 20px;
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: 2px solid white;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+
+        /* Стили для баннера */
+        .banner-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+            min-height: 70px;
+            background: transparent;
+            border-radius: 16px;
+            padding: 4px 0;
+            font-family: system-ui, 'Segoe UI', 'Inter', sans-serif;
+            margin-bottom: 20px;
+        }
+        .banner-link {
+            display: block;
+            width: 100%;
+            max-width: 1100px;
+            text-decoration: none;
+            cursor: pointer;
+            transition: opacity 0.15s ease;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.1);
+        }
+        .banner-link:hover { opacity: 0.94; }
+        .widget-area { width: 100%; background: #ffffff; }
+        .widget-slide { width: 100%; display: flex; align-items: center; justify-content: center; }
+        .music-widget-mini { background: linear-gradient(90deg, #1e2b3c, #0f1a24); color: white; padding: 0.5rem 1rem; display: flex; align-items: center; justify-content: space-between; gap: 12px; width: 100%; }
+        .music-widget-mini .icon { font-size: 24px; }
+        .music-widget-mini .text { flex: 1; }
+        .music-widget-mini h4 { font-size: 0.85rem; font-weight: 600; margin-bottom: 2px; }
+        .music-widget-mini p { font-size: 0.65rem; opacity: 0.8; }
+        .music-widget-mini .badge-mini { background: #ffb347; padding: 3px 10px; border-radius: 20px; font-size: 0.65rem; font-weight: bold; color: #1e2b3c; white-space: nowrap; }
+        .guitar-mini { background: linear-gradient(90deg, #f5e7d9, #e6d2b5); padding: 0.5rem 1rem; display: flex; align-items: center; justify-content: space-between; gap: 12px; width: 100%; }
+        .guitar-mini .emoji { font-size: 24px; }
+        .guitar-mini .title-mini { font-size: 0.85rem; font-weight: 800; color: #3b2a1f; }
+        .guitar-mini .cta-mini { background: #000000cc; color: #ffd966; padding: 3px 12px; border-radius: 30px; font-size: 0.65rem; font-weight: bold; white-space: nowrap; }
+        .sale-mini { background: #f9b81b; padding: 0.5rem 1rem; display: flex; align-items: center; justify-content: space-between; gap: 12px; width: 100%; }
+        .sale-mini .discount-mini { font-size: 0.9rem; font-weight: 900; background: white; padding: 2px 10px; border-radius: 30px; }
+        .sale-mini .offer-mini { font-size: 0.7rem; font-weight: bold; flex: 1; }
+        .sale-mini .arrow { font-size: 1rem; }
+        .simple-mini { background: #2c3e50; padding: 0.5rem 1rem; display: flex; align-items: center; justify-content: center; gap: 10px; width: 100%; color: white; }
+        .simple-mini span:first-child { font-size: 1.2rem; }
+        .simple-mini .simple-text { font-size: 0.8rem; font-weight: 500; }
+        .text-mini { background: #1a472a; padding: 0.5rem 1rem; display: flex; align-items: center; justify-content: space-between; width: 100%; color: white; }
+        .text-mini .main-text { font-size: 0.8rem; font-weight: 600; }
+        .text-mini .btn-mini { background: #ffaa33; color: #1a472a; padding: 3px 12px; border-radius: 20px; font-size: 0.65rem; font-weight: bold; }
+        @media (max-width: 550px) {
+            .banner-container { min-height: 60px; }
+            .music-widget-mini h4 { font-size: 0.75rem; }
+            .simple-mini .simple-text { font-size: 0.7rem; }
+            .text-mini .main-text { font-size: 0.7rem; }
+        }
+
+        /* ==================== СТИЛИ БЛОГА ==================== */
+        .blog-section {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 20px;
+        }
+
+        .blog-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 25px;
+        }
+
+        .blog-card {
+            background: white;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .blog-card:hover { transform: translateY(-5px); }
+
+        .blog-cover {
+            height: 160px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3rem;
+            color: white;
+        }
+
+        .blog-card-content { padding: 20px; flex: 1; display: flex; flex-direction: column; }
+
+        .blog-tag {
+            display: inline-block;
+            background: #E91E63;
+            color: white;
+            font-size: 0.7rem;
+            padding: 3px 10px;
+            border-radius: 20px;
+            margin-bottom: 10px;
+            align-self: flex-start;
+        }
+
+        .blog-card-title {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .blog-card-excerpt {
+            color: #666;
+            font-size: 0.9rem;
+            line-height: 1.5;
+            margin-bottom: 15px;
+            flex: 1;
+        }
+
+        .blog-card-meta {
+            display: flex;
+            gap: 15px;
+            font-size: 0.8rem;
+            color: #888;
+            border-top: 1px solid #eee;
+            padding-top: 12px;
+        }
+
+        /* Полная статья */
+        .blog-post-overlay {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: #fff;
+            z-index: 35000;
+            overflow-y: auto;
+            display: none;
+        }
+
+        .blog-post-overlay.active { display: block; }
+
+        .blog-post-container {
+            max-width: 820px;
+            margin: 0 auto;
+            padding: 30px 24px 60px;
+        }
+
+        .blog-post-back {
+            background: #f0f0f0;
+            border: none;
+            color: #333;
+            font-size: 15px;
+            cursor: pointer;
+            padding: 8px 16px;
+            border-radius: 40px;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 25px;
+        }
+
+        .blog-post-back:hover { background: #e0e0e0; }
+
+        .blog-post-container h1 {
+            font-size: 2rem;
+            color: #222;
+            margin-bottom: 12px;
+            line-height: 1.25;
+        }
+
+        .blog-post-info {
+            display: flex;
+            gap: 20px;
+            color: #888;
+            font-size: 0.9rem;
+            margin-bottom: 25px;
+            flex-wrap: wrap;
+        }
+
+        .blog-post-body {
+            color: #333;
+            line-height: 1.75;
+            font-size: 1.05rem;
+        }
+
+        .blog-post-body p { margin-bottom: 16px; }
+        .blog-post-body h2 { margin: 25px 0 12px; font-size: 1.4rem; }
+        .blog-post-body ul { margin: 0 0 16px 22px; }
+        .blog-post-body li { margin-bottom: 8px; }
+
+        /* ==================== ПЛЕЙЛИСТ ==================== */
+        .playlist-embed-wrapper {
+            position: relative;
+            width: 100%;
+            max-width: 880px;
+            margin: 0 auto;
+            aspect-ratio: 16 / 9;
+            background: #000;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+        }
+
+        .playlist-embed-wrapper iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
+        @supports not (aspect-ratio: 16 / 9) {
+            .playlist-embed-wrapper {
+                height: 0;
+                padding-bottom: 56.25%;
+            }
+        }
+
+        .playlist-hint {
+            color: #666;
+            margin-bottom: 15px;
+            font-size: 0.95rem;
+        }
+
+        .playlist-cta-row {
+            margin: 10px 0 20px;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        /* ==================== СТИЛИ ЗАМЕТОК (Рабочая тетрадь) ==================== */
+        #notesSection {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 0;
+            overflow: hidden;
+            min-height: 80vh;
+        }
+
+        #notesSection .app-container {
+            display: none;
+            height: 80vh;
+        }
+
+        #notesSection .app-container.active {
+            display: flex;
+        }
+
+        #notesSection .auth-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 70vh;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 15px;
+        }
+
+        #notesSection .auth-box {
+            background: white;
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            width: 400px;
+            max-width: 90%;
+        }
+
+        #notesSection .auth-box h1 {
+            text-align: center;
+            color: #2c3e50;
+            margin-bottom: 15px;
+            font-size: 28px;
+        }
+
+        #notesSection .auth-subtitle {
+            text-align: center;
+            color: #888;
+            font-size: 13px;
+            margin-bottom: 25px;
+        }
+
+        #notesSection .auth-box .form-group {
+            margin-bottom: 20px;
+        }
+
+        #notesSection .auth-box label {
+            display: block;
+            margin-bottom: 8px;
+            color: #555;
+            font-weight: 500;
+        }
+
+        #notesSection .auth-box input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+
+        #notesSection .auth-box input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        #notesSection .auth-box .btn-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 25px;
+        }
+
+        #notesSection .btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            flex: 1;
+        }
+
+        #notesSection .btn-primary { background: #667eea; color: white; }
+        #notesSection .btn-primary:hover { background: #5a6fd6; transform: translateY(-2px); box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4); }
+        #notesSection .btn-secondary { background: #e0e0e0; color: #333; }
+        #notesSection .btn-secondary:hover { background: #d0d0d0; }
+        #notesSection .btn-danger { background: #e74c3c; color: white; }
+        #notesSection .btn-danger:hover { background: #c0392b; }
+        #notesSection .btn-success { background: #27ae60; color: white; }
+        #notesSection .btn-success:hover { background: #219a52; transform: translateY(-2px); box-shadow: 0 5px 15px rgba(39, 174, 96, 0.4); }
+
+        #notesSection .sidebar {
+            width: 280px;
+            background: #2c3e50;
+            color: white;
+            display: flex;
+            flex-direction: column;
+            padding: 15px;
+            overflow-y: auto;
+            flex-shrink: 0;
+        }
+
+        #notesSection .sidebar h2 {
+            font-size: 18px;
+            margin-bottom: 15px;
+            text-align: center;
+            color: #ecf0f1;
+        }
+
+        #notesSection .search-box { margin-bottom: 10px; }
+        #notesSection .search-box input {
+            width: 100%;
+            padding: 10px;
+            border: none;
+            border-radius: 6px;
+            font-size: 13px;
+            background: rgba(255,255,255,0.1);
+            color: white;
+        }
+        #notesSection .search-box input::placeholder { color: rgba(255,255,255,0.5); }
+        #notesSection .search-box input:focus { outline: none; background: rgba(255,255,255,0.2); }
+
+        #notesSection .notes-list {
+            flex: 1;
+            overflow-y: auto;
+            margin-bottom: 10px;
+        }
+
+        #notesSection .note-item {
+            padding: 10px 12px;
+            margin-bottom: 5px;
+            background: rgba(255,255,255,0.08);
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background 0.2s;
+            font-size: 13px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        #notesSection .note-item:hover { background: rgba(255,255,255,0.15); }
+        #notesSection .note-item.active { background: #667eea; }
+
+        #notesSection .sidebar-buttons {
+            display: flex;
+            gap: 5px;
+            margin-bottom: 10px;
+        }
+
+        #notesSection .sidebar-buttons .btn {
+            padding: 8px 10px;
+            font-size: 12px;
+        }
+
+        #notesSection .user-info {
+            text-align: center;
+            padding-top: 10px;
+            border-top: 1px solid rgba(255,255,255,0.1);
+            font-size: 13px;
+        }
+
+        #notesSection .user-info .username {
+            margin-bottom: 8px;
+            color: #bdc3c7;
+        }
+
+        #notesSection .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+            overflow: hidden;
+            background: #f0f0f0;
+        }
+
+        #notesSection .note-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        #notesSection .note-header label {
+            font-weight: 600;
+            color: #2c3e50;
+            white-space: nowrap;
+        }
+
+        #notesSection .note-header input {
+            flex: 1;
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 18px;
+            font-weight: 600;
+            color: #2c3e50;
+            transition: border-color 0.3s;
+        }
+
+        #notesSection .note-header input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        #notesSection .note-date {
+            text-align: right;
+            font-size: 12px;
+            color: #999;
+            margin-bottom: 10px;
+            padding-right: 5px;
+        }
+
+        #notesSection .note-text {
+            flex: 1;
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            font-family: 'Segoe UI', Arial, sans-serif;
+            resize: none;
+            line-height: 1.6;
+            transition: border-color 0.3s;
+        }
+
+        #notesSection .note-text:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        #notesSection .toolbar {
+            display: flex;
+            gap: 8px;
+            margin-top: 15px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        #notesSection .toolbar .btn {
+            padding: 8px 16px;
+            font-size: 13px;
+            flex: 0 0 auto;
+        }
+
+        #notesSection .toolbar .spacer { flex: 1; }
+
+        #notesSection .attachments-section {
+            margin-top: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 10px;
+            max-height: 200px;
+            overflow-y: auto;
+            background: white;
+        }
+
+        #notesSection .attachments-section h3 {
+            font-size: 14px;
+            color: #555;
+            margin-bottom: 10px;
+        }
+
+        #notesSection .attachment-group { margin-bottom: 10px; }
+
+        #notesSection .attachment-group h4 {
+            font-size: 12px;
+            color: #777;
+            margin-bottom: 5px;
+            padding-bottom: 3px;
+            border-bottom: 1px solid #eee;
+        }
+
+        #notesSection .attachment-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 8px;
+            background: #f8f9fa;
+            border-radius: 6px;
+            margin-bottom: 4px;
+            font-size: 13px;
+        }
+
+        #notesSection .attachment-item .icon { font-size: 16px; }
+        #notesSection .attachment-item .name { flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        #notesSection .attachment-item .size { color: #999; font-size: 11px; white-space: nowrap; }
+
+        #notesSection .attachment-item .actions { display: flex; gap: 4px; }
+        #notesSection .attachment-item .actions button {
+            padding: 3px 8px;
+            font-size: 11px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        #notesSection .btn-download { background: #3498db; color: white; }
+        #notesSection .btn-download:hover { background: #2980b9; }
+        #notesSection .btn-remove { background: #e74c3c; color: white; }
+        #notesSection .btn-remove:hover { background: #c0392b; }
+        #notesSection .btn-view { background: #27ae60; color: white; }
+        #notesSection .btn-view:hover { background: #219a52; }
+
+        #notesSection .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0,0,0,0.6);
+            z-index: 50000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        #notesSection .modal-overlay.active { display: flex; }
+
+        #notesSection .modal {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            max-width: 90%;
+            max-height: 90%;
+            overflow: auto;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+        }
+
+        #notesSection .modal h3 { margin-bottom: 15px; color: #2c3e50; }
+        #notesSection .modal img { max-width: 100%; max-height: 70vh; border-radius: 8px; }
+        #notesSection .modal .close-btn {
+            margin-top: 15px;
+            padding: 10px 25px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        #notesSection .modal .close-btn:hover { background: #5a6fd6; }
+
+        #notesSection .toast {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            padding: 15px 25px;
+            border-radius: 10px;
+            color: white;
+            font-weight: 500;
+            z-index: 60000;
+            animation: slideIn 0.3s ease;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.3);
+            max-width: 350px;
+        }
+
+        #notesSection .toast.success { background: #27ae60; }
+        #notesSection .toast.error { background: #e74c3c; }
+        #notesSection .toast.info { background: #3498db; }
+
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        #notesSection .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: #999;
+        }
+        #notesSection .empty-state .icon { font-size: 48px; margin-bottom: 15px; }
+        #notesSection .empty-state p { font-size: 14px; }
+
+        @media (max-width: 768px) {
+            #notesSection .sidebar { width: 200px; }
+            #notesSection .note-header input { font-size: 14px; }
+            #notesSection .toolbar .btn { padding: 6px 10px; font-size: 12px; }
+        }
+
+        @media (max-width: 600px) {
+            #notesSection .app-container.active { flex-direction: column; height: auto; }
+            #notesSection .sidebar { width: 100%; height: auto; flex-direction: row; flex-wrap: wrap; }
+            #notesSection .notes-list { flex: 1 0 100%; max-height: 100px; }
+        }
+
+        #notesSection ::-webkit-scrollbar { width: 8px; }
+        #notesSection ::-webkit-scrollbar-track { background: rgba(0,0,0,0.05); }
+        #notesSection ::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.2); border-radius: 4px; }
+        #notesSection ::-webkit-scrollbar-thumb:hover { background: rgba(0,0,0,0.3); }
+        #notesSection .sidebar ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); }
+        #notesSection .sidebar ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.3); }
+
+        /* ==================== СООБЩЕСТВО ==================== */
+        .community-wrap {
+            background: rgba(255,255,255,0.95);
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 20px;
+        }
+
+        .community-header { margin-bottom: 20px; }
+
+        .community-cover {
+            height: 160px;
+            border-radius: 15px;
+            background: linear-gradient(135deg, #00A896, #028090);
+            position: relative;
+            overflow: hidden;
+            margin-bottom: 15px;
+        }
+
+        .community-cover::after {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(circle at 20% 30%, rgba(255,255,255,0.25), transparent 60%);
+        }
+
+        .community-cover-overlay {
+            position: absolute;
+            bottom: 15px;
+            left: 20px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            z-index: 2;
+            color: white;
+        }
+
+        .community-avatar {
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.25);
+            border: 3px solid white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            backdrop-filter: blur(4px);
+        }
+
+        .community-headline h2 { font-size: 1.5rem; margin-bottom: 4px; }
+        .community-headline p { font-size: 0.85rem; opacity: 0.9; }
+
+        .community-stats {
+            display: flex;
+            gap: 25px;
+            align-items: center;
+            flex-wrap: wrap;
+            padding: 0 5px;
+        }
+
+        .cstat { display: flex; flex-direction: column; align-items: center; }
+        .cstat strong { font-size: 1.3rem; color: #00A896; }
+        .cstat span { font-size: 0.75rem; color: #888; }
+
+        .admin-toggle { margin-left: auto; }
+
+        .admin-panel {
+            display: none;
+            background: #f4faf9;
+            border: 2px dashed #00A896;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .admin-panel.active { display: block; }
+        .admin-panel h3 { color: #028090; margin-bottom: 15px; font-size: 1.1rem; }
+
+        .admin-form { display: flex; flex-direction: column; gap: 10px; }
+
+        .admin-form input,
+        .admin-form textarea,
+        .admin-form select {
+            padding: 10px 14px;
+            border: 1px solid #d0e5e2;
+            border-radius: 10px;
+            font-size: 14px;
+            font-family: inherit;
+            width: 100%;
+        }
+
+        .admin-form textarea { min-height: 90px; resize: vertical; }
+
+        .admin-row { display: flex; gap: 10px; flex-wrap: wrap; }
+        .admin-row > * { flex: 1; min-width: 160px; }
+
+        .community-filters {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+        }
+
+        .cfilter {
+            padding: 8px 16px;
+            border: 2px solid #e0e0e0;
+            background: white;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 600;
+            color: #555;
+            transition: all 0.2s;
+        }
+
+        .cfilter:hover { border-color: #00A896; color: #00A896; }
+        .cfilter.active { background: #00A896; border-color: #00A896; color: white; }
+
+        .community-feed {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+            gap: 20px;
+        }
+
+        .post-card {
+            background: white;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+            display: flex;
+            flex-direction: column;
+            transition: transform 0.25s;
+        }
+
+        .post-card:hover { transform: translateY(-4px); }
+
+        .post-head {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 15px 18px 10px;
+        }
+
+        .post-ava {
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #00A896, #028090);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            flex-shrink: 0;
+        }
+
+        .post-author { font-weight: 700; color: #2c3e50; font-size: 0.95rem; }
+        .post-time { font-size: 0.75rem; color: #999; }
+
+        .post-body { padding: 0 18px 12px; }
+        .post-title { font-size: 1.15rem; font-weight: 700; color: #222; margin-bottom: 8px; }
+        .post-text { color: #555; line-height: 1.55; font-size: 0.92rem; white-space: pre-wrap; }
+
+        .post-media {
+            width: 100%;
+            margin-top: 12px;
+            border-radius: 12px;
+            overflow: hidden;
+            background: #000;
+        }
+
+        .post-media img { width: 100%; display: block; }
+        .post-media iframe { width: 100%; aspect-ratio: 16/9; border: none; display: block; }
+
+        .post-tags { display: flex; gap: 6px; flex-wrap: wrap; padding: 10px 18px 0; }
+        .post-tag {
+            background: #e6f7f5;
+            color: #028090;
+            font-size: 0.72rem;
+            padding: 3px 10px;
+            border-radius: 20px;
+            font-weight: 600;
+        }
+
+        /* Опрос */
+        .poll { padding: 12px 18px 0; display: flex; flex-direction: column; gap: 8px; }
+        .poll-option {
+            position: relative;
+            border: 2px solid #e0f2f0;
+            border-radius: 10px;
+            padding: 10px 14px;
+            cursor: pointer;
+            overflow: hidden;
+            transition: border-color 0.2s;
+            font-size: 0.88rem;
+            color: #333;
+        }
+        .poll-option:hover { border-color: #00A896; }
+        .poll-option.voted { border-color: #00A896; }
+        .poll-bar {
+            position: absolute;
+            inset: 0 auto 0 0;
+            background: #d6f2ee;
+            width: 0;
+            transition: width 0.5s ease;
+            z-index: 0;
+        }
+        .poll-option span { position: relative; z-index: 1; display: flex; justify-content: space-between; }
+        .poll-option .pct { font-weight: 700; color: #028090; }
+
+        /* Действия */
+        .post-actions {
+            display: flex;
+            gap: 5px;
+            padding: 12px 18px;
+            border-top: 1px solid #f0f0f0;
+            margin-top: 12px;
+        }
+
+        .paction {
+            flex: 1;
+            background: none;
+            border: none;
+            padding: 8px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.82rem;
+            color: #777;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            transition: background 0.2s, color 0.2s;
+        }
+
+        .paction:hover { background: #f4faf9; color: #00A896; }
+        .paction.liked { color: #E91E63; }
+        .paction.saved { color: #FF9800; }
+
+        /* Комментарии */
+        .comments { padding: 0 18px 15px; display: none; }
+        .comments.open { display: block; }
+
+        .comment {
+            display: flex;
+            gap: 10px;
+            padding: 8px 0;
+            border-top: 1px solid #f5f5f5;
+            font-size: 0.85rem;
+        }
+
+        .comment-ava {
+            width: 30px; height: 30px;
+            border-radius: 50%;
+            background: #cfeeea;
+            color: #028090;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+            font-weight: 700;
+            flex-shrink: 0;
+        }
+
+        .comment-body strong { color: #2c3e50; }
+        .comment-body p { color: #555; margin-top: 2px; }
+
+        .comment-form { display: flex; gap: 8px; margin-top: 10px; }
+        .comment-form input {
+            flex: 1;
+            padding: 9px 12px;
+            border: 1px solid #e0e0e0;
+            border-radius: 20px;
+            font-size: 0.85rem;
+        }
+        .comment-form button {
+            background: #00A896;
+            color: white;
+            border: none;
+            border-radius: 20px;
+            padding: 0 16px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        .community-empty { text-align: center; padding: 50px; color: #999; }
+        .community-empty .icon { font-size: 3rem; margin-bottom: 10px; }
+
+        @media (max-width: 600px) {
+            .community-feed { grid-template-columns: 1fr; }
+            .admin-toggle { margin-left: 0; }
+            .community-stats { justify-content: space-between; }
+        }
+    </style>
+</head>
+<body>
+    <div class="splash-container" id="splashContainer">
+        <button class="skip-button" id="skipButton"><i class="fas fa-forward"></i> Пропустить</button>
+        <div class="splash-card">
+            <div class="logo-animation"><div class="pulse-circle"><span>W</span></div></div>
+            <h1 class="splash-title">Добро пожаловать в WasabiApps</h1>
+            <p>Приложения, книги, музыка, подкасты и обзоры!</p>
+            <div class="progress-container"><div class="progress-bar"></div></div>
+            <div>Загрузка... <span id="countdown">3</span> сек</div>
+        </div>
+    </div>
+
+    <div class="main-app" id="mainApp">
+        <div class="container">
+            <div class="banner-container" id="topBannerContainer">
+                <a href="https://prostogitara.sourcecraft.site/music-inside" class="banner-link" target="_blank" rel="noopener noreferrer">
+                    <div class="widget-area" id="rotatingWidgetsTop"></div>
+                </a>
+            </div>
+
+            <header class="header">
+                <div class="header-content">
+                    <div class="logo" onclick="showSection('store')">
+                        <div class="logo-icon">🎮</div>
+                        <div class="logo-text">WasabiApps</div>
+                    </div>
+                    <div class="nav-buttons">
+                        <button class="btn btn-warning" onclick="showSection('store')">🔥 Все товары</button>
+                        <button class="btn btn-review" onclick="showSection('reviews')">📹 Обзоры</button>
+                        <button class="btn btn-playlist" onclick="showSection('playlist')">🎞️ Плейлист</button>
+                        <button class="btn btn-shorts" onclick="showSection('shorts')">📱 Коротыши</button>
+                        <button class="btn btn-blog" onclick="showSection('blog')">📝 Блог</button>
+                        <button class="btn btn-community" onclick="showSection('community')">👥 Сообщество</button>
+                        <button class="btn btn-note" onclick="showSection('notes')">📓 Заметки</button>
+                        <button class="btn btn-primary" onclick="showSection('store'); filterByType('app')">📱 Приложения</button>
+                        <button class="btn btn-music" onclick="showSection('store'); filterByType('music')">🎵 Музыка/Подкасты</button>
+                        <button class="btn btn-book" onclick="showSection('store'); filterByType('book')">📚 Книги/Журналы</button>
+                    </div>
+                </div>
+            </header>
+
+            <div id="storeSection" class="section active">
+                <section class="hero">
+                    <h1>Откройте мир цифровых товаров</h1>
+                    <p>Приложения, книги, музыка, подкасты, сайты и многое другое!</p>
+                    <div class="platform-buttons">
+                        <button class="btn btn-android" onclick="filterByPlatform('android')"><i class="fab fa-android"></i> Android</button>
+                        <button class="btn btn-desktop" onclick="filterByPlatform('desktop')"><i class="fas fa-desktop"></i> Desktop</button>
+                        <button class="btn btn-web" onclick="filterByPlatform('web')"><i class="fas fa-globe"></i> Web</button>
+                        <button class="btn btn-secondary" onclick="filterByPlatform('all')"><i class="fas fa-list"></i> Все платформы</button>
+                    </div>
+                </section>
+                <section class="filters">
+                    <div class="filter-row">
+                        <div class="filter-group"><label>Категория</label><select id="categoryFilter" onchange="applyFilters()"><option value="all">Все</option><option value="Игры">Игры</option><option value="Приложения">Приложения</option><option value="Утилиты">Утилиты</option><option value="Образование">Образование</option><option value="Общение">Общение</option><option value="Социально значимые приложения">Соц. значимые</option><option value="Книга">Книга</option><option value="Журнал">Журнал</option><option value="Музыка">Музыка</option><option value="Подкаст">Подкаст</option><option value="Программа">Программа</option><option value="Викторина">Викторина</option></select></div>
+                        <div class="filter-group"><label>Платформа</label><select id="platformFilter" onchange="applyFilters()"><option value="all">Все</option><option value="android">Android</option><option value="desktop">Desktop</option><option value="web">Web</option><option value="book">Книга</option><option value="music">Музыка</option></select></div>
+                        <div class="filter-group"><label>Сортировка</label><select id="sortFilter" onchange="applyFilters()"><option value="popular">По популярности</option><option value="price_asc">По цене (возр.)</option><option value="price_desc">По цене (убыв.)</option></select></div>
+                        <div class="filter-group"><label>Поиск</label><input type="text" id="searchFilter" placeholder="Название..." oninput="applyFilters()"></div>
+                    </div>
+                </section>
+                <section class="apps-grid" id="appsGrid"></section>
+            </div>
+
+            <div id="reviewsSection" class="section">
+                <div class="reviews-section">
+                    <h2 class="section-title"><i class="fas fa-video"></i> Видеообзоры</h2>
+                    <div class="banner-container" id="reviewsBannerContainer">
+                        <a href="https://prostogitara.sourcecraft.site/music-inside" class="banner-link" target="_blank" rel="noopener noreferrer">
+                            <div class="widget-area" id="rotatingWidgetsReviews"></div>
+                        </a>
+                    </div>
+                    <div class="playlist-cta-row">
+                        <button class="btn btn-playlist" onclick="showSection('playlist')">
+                            <i class="fas fa-list"></i> Смотреть весь плейлист
+                        </button>
+                    </div>
+                    <div class="reviews-grid" id="reviewsGrid"></div>
+                </div>
+            </div>
+
+            <!-- ==================== СЕКЦИЯ ПЛЕЙЛИСТА ==================== -->
+            <div id="playlistSection" class="section">
+                <div class="reviews-section">
+                    <h2 class="section-title"><i class="fas fa-list"></i> Плейлист WasabiApps</h2>
+                    <p class="playlist-hint">
+                        Смотрите все видео подряд — плеер автоматически переключит следующий ролик.
+                    </p>
+                    <div class="playlist-embed-wrapper">
+                        <iframe
+                            src="https://runtime.video.cloud.yandex.net/player/playlist/vplqbfr4cugaxp33lcmz?autoplay=0&mute=0"
+                            allow="autoplay; fullscreen; accelerometer; gyroscope; picture-in-picture; encrypted-media"
+                            frameborder="0"
+                            scrolling="no"
+                            allowfullscreen>
+                        </iframe>
+                    </div>
+                </div>
+            </div>
+
+            <div id="shortsSection" class="section">
+                <div class="shorts-section">
+                    <h2 class="section-title"><i class="fas fa-film"></i> Коротыши — короткие видео</h2>
+                    <div class="shorts-grid" id="shortsGrid"></div>
+                </div>
+            </div>
+
+            <div id="blogSection" class="section">
+                <div class="blog-section">
+                    <h2 class="section-title"><i class="fas fa-newspaper"></i> Блог WasabiApps</h2>
+                    <div class="blog-grid" id="blogGrid"></div>
+                </div>
+            </div>
+
+            <!-- ==================== СЕКЦИЯ СООБЩЕСТВА ==================== -->
+            <div id="communitySection" class="section">
+                <div class="community-wrap">
+
+                    <!-- Шапка сообщества -->
+                    <div class="community-header">
+                        <div class="community-cover">
+                            <div class="community-cover-overlay">
+                                <div class="community-avatar">👥</div>
+                                <div class="community-headline">
+                                    <h2>Сообщество WasabiApps</h2>
+                                    <p>Новости, обновления, фото и видео от команды</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="community-stats">
+                            <div class="cstat"><strong id="cstatPosts">0</strong><span>постов</span></div>
+                            <div class="cstat"><strong id="cstatLikes">0</strong><span>лайков</span></div>
+                            <div class="cstat"><strong id="cstatComments">0</strong><span>комментариев</span></div>
+                            <button class="btn btn-primary btn-small admin-toggle" id="adminToggleBtn" onclick="communityApp.toggleAdmin()">
+                                <i class="fas fa-user-shield"></i> Войти как админ
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Панель админа -->
+                    <div class="admin-panel" id="adminPanel">
+                        <h3><i class="fas fa-pen-square"></i> Новый пост</h3>
+                        <div class="admin-form">
+                            <input type="text" id="postTitle" placeholder="Заголовок поста">
+                            <textarea id="postText" placeholder="Текст поста..."></textarea>
+
+                            <div class="admin-row">
+                                <select id="postType">
+                                    <option value="text">📝 Текст</option>
+                                    <option value="photo">🖼️ Фото</option>
+                                    <option value="video">🎬 Видео</option>
+                                    <option value="poll">📊 Опрос</option>
+                                </select>
+                                <input type="text" id="postMedia" placeholder="URL фото или ссылка на видео">
+                            </div>
+
+                            <div class="admin-row" id="pollOptionsRow" style="display:none;">
+                                <input type="text" id="pollOptions" placeholder="Варианты через запятую: Да, Нет, Не знаю">
+                            </div>
+
+                            <div class="admin-row">
+                                <input type="text" id="postTags" placeholder="Теги через запятую: новости, обновление">
+                                <button class="btn btn-success" onclick="communityApp.addPost()">
+                                    <i class="fas fa-paper-plane"></i> Опубликовать
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Фильтры ленты -->
+                    <div class="community-filters">
+                        <button class="cfilter active" data-filter="all" onclick="communityApp.setFilter('all', this)">Все</button>
+                        <button class="cfilter" data-filter="text" onclick="communityApp.setFilter('text', this)">📝 Тексты</button>
+                        <button class="cfilter" data-filter="photo" onclick="communityApp.setFilter('photo', this)">🖼️ Фото</button>
+                        <button class="cfilter" data-filter="video" onclick="communityApp.setFilter('video', this)">🎬 Видео</button>
+                        <button class="cfilter" data-filter="poll" onclick="communityApp.setFilter('poll', this)">📊 Опросы</button>
+                    </div>
+
+                    <!-- Лента -->
+                    <div class="community-feed" id="communityFeed"></div>
+
+                    <div class="community-empty" id="communityEmpty" style="display:none;">
+                        <div class="icon">📭</div>
+                        <p>Пока нет постов в этой категории</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ==================== СЕКЦИЯ ЗАМЕТОК ==================== -->
+            <div id="notesSection" class="section">
+                <div class="auth-container" id="authScreen">
+                    <div class="auth-box">
+                        <h1>📓 Рабочая тетрадь</h1>
+                        <p class="auth-subtitle">Введите любое имя — оно будет вашим логином, данные сохраняются локально</p>
+                        <div class="form-group">
+                            <label>Ваше имя (логин):</label>
+                            <input type="text" id="loginUsername" placeholder="Например: Иван" value="">
+                        </div>
+                        <div class="form-group">
+                            <label>Пароль:</label>
+                            <input type="password" id="loginPassword" placeholder="Введите пароль" value="123">
+                        </div>
+                        <div class="btn-group">
+                            <button class="btn btn-primary" onclick="notebookApp.login()">Войти</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="app-container" id="appScreen">
+                    <div class="sidebar">
+                        <h2>📝 Мои записи</h2>
+                        
+                        <div class="search-box">
+                            <input type="text" id="searchInput" placeholder="🔍 Поиск..." oninput="notebookApp.searchNotes()">
+                        </div>
+                        
+                        <div class="notes-list" id="notesList"></div>
+                        
+                        <div class="sidebar-buttons">
+                            <button class="btn btn-success" onclick="notebookApp.createNote()">+ Новая</button>
+                            <button class="btn btn-danger" onclick="notebookApp.deleteNote()">🗑 Удалить</button>
+                        </div>
+                        
+                        <div class="sidebar-buttons">
+                            <button class="btn btn-secondary" onclick="notebookApp.exportNote()">💾 Экспорт</button>
+                            <button class="btn btn-secondary" onclick="notebookApp.importNote()">📂 Импорт</button>
+                        </div>
+                        
+                        <div class="user-info">
+                            <div class="username" id="currentUserDisplay"></div>
+                            <button class="btn btn-secondary" onclick="notebookApp.logout()">Выйти</button>
+                        </div>
+                    </div>
+                    
+                    <div class="main-content">
+                        <div class="note-header">
+                            <label>Заголовок:</label>
+                            <input type="text" id="noteTitle" placeholder="Название записи...">
+                        </div>
+                        
+                        <div class="note-date" id="noteDate"></div>
+                        
+                        <textarea class="note-text" id="noteText" placeholder="Начните писать..."></textarea>
+                        
+                        <div class="toolbar">
+                            <button class="btn btn-secondary" onclick="notebookApp.addLink()">🔗 Ссылка</button>
+                            <button class="btn btn-secondary" onclick="notebookApp.addImage()">🖼️ Изображение</button>
+                            <button class="btn btn-secondary" onclick="notebookApp.addDocument()">📄 Документ</button>
+                            <button class="btn btn-secondary" onclick="notebookApp.addAnyFile()">📎 Любой файл</button>
+                            <div class="spacer"></div>
+                            <button class="btn btn-secondary" onclick="notebookApp.exportToDoc()">📝 Скачать DOC</button>
+                            <button class="btn btn-secondary" onclick="notebookApp.exportToPdf()">📕 Скачать PDF</button>
+                            <button class="btn btn-success" onclick="notebookApp.sendToMessenger()">💬 Отправить в чат</button>
+                            <button class="btn btn-primary" onclick="notebookApp.saveNote()">💾 Сохранить</button>
+                        </div>
+                        
+                        <div class="attachments-section" id="attachmentsSection">
+                            <h3>📎 Вложения</h3>
+                            <div id="attachmentsList">
+                                <div class="empty-state">
+                                    <div class="icon">📭</div>
+                                    <p>Нет вложений</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <footer class="footer">
+                <div class="copyright">© 2015-2026 WasabiApps. Антонов И.Н. (Самозанятый) ИНН 761200463622 Все права защищены.</div>
+            </footer>
+        </div>
+    </div>
+
+    <div id="shortsPlayerOverlay" class="shorts-player-overlay">
+        <button class="shorts-close-btn" id="closeShortsBtn"><i class="fas fa-times"></i></button>
+        <div class="shorts-player-wrapper">
+            <iframe id="shortsPlayerIframe" src="" allow="autoplay; fullscreen" allowfullscreen></iframe>
+            <div class="shorts-nav">
+                <button id="prevShortBtn"><i class="fas fa-chevron-up"></i></button>
+                <button id="nextShortBtn"><i class="fas fa-chevron-down"></i></button>
+            </div>
+        </div>
+    </div>
+
+    <div id="videoPageOverlay" class="video-page-overlay">
+        <div class="video-page-container">
+            <div class="video-page-header">
+                <button class="video-page-close-btn" id="closeVideoPageBtn"><i class="fas fa-arrow-left"></i> Назад</button>
+                <div style="color:white;"><i class="fas fa-play-circle"></i> WasabiApps Плеер</div>
+            </div>
+            <div class="video-layout">
+                <div class="video-main">
+                    <div class="video-player-wrapper">
+                        <iframe id="mainVideoIframe" src="" allow="autoplay; fullscreen; encrypted-media" allowfullscreen></iframe>
+                    </div>
+                    <div class="video-info">
+                        <h2 id="videoPageTitle">Загрузка...</h2>
+                        <div class="video-meta">
+                            <span><i class="fas fa-user"></i> <span id="videoPageAuthor"></span></span>
+                            <span><i class="fas fa-calendar"></i> <span id="videoPageDate"></span></span>
+                        </div>
+                        <div class="video-description" id="videoPageDesc"></div>
+                    </div>
+                </div>
+                <div class="recommendations-sidebar">
+                    <div class="recommendations-title"><i class="fas fa-list-ul"></i> Рекомендации</div>
+                    <div id="recommendationsList"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="blogPostOverlay" class="blog-post-overlay">
+        <div class="blog-post-container">
+            <button class="blog-post-back" onclick="closeBlogPost()">
+                <i class="fas fa-arrow-left"></i> Назад в блог
+            </button>
+            <h1 id="blogPostTitle"></h1>
+            <div class="blog-post-info">
+                <span><i class="fas fa-user"></i> <span id="blogPostAuthor"></span></span>
+                <span><i class="fas fa-calendar"></i> <span id="blogPostDate"></span></span>
+                <span><i class="fas fa-clock"></i> <span id="blogPostRead"></span></span>
+            </div>
+            <div class="blog-post-body" id="blogPostBody"></div>
+        </div>
+    </div>
+
+    <div id="audioModal" class="modal-overlay">
+        <div class="modal-container">
+            <div class="modal-header">
+                <h3 id="modalTitle">Прослушивание</h3>
+                <button class="modal-close" onclick="closeAudioModal()">&times;</button>
+            </div>
+            <div class="modal-body" id="modalBody"></div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="imageModal">
+        <div class="modal">
+            <h3 id="modalImageTitle">Просмотр изображения</h3>
+            <img id="modalImage" src="" alt="Изображение">
+            <button class="close-btn" onclick="notebookApp.closeModal()">Закрыть</button>
+        </div>
+    </div>
+
+    <input type="file" id="fileInput" style="display: none;">
+
+    <script>
+        // ==================== ВСЕ ПРОЕКТЫ ====================
+        const allProducts = [
+            { id: 1, name: "Wasabiapps", description: "Магазин приложений", price: 0, category: "Приложения", platform: "android", developer: "Wasabiapps", rating: 4.5, downloads: 15000, isNew: true, isPopular: true, productType: "app", downloadUrl: "https://sourcecraft.dev/api/attachments/143714737874575416" },
+            { id: 2, name: "Social", description: "Социальный гид", price: 0, category: "Социально значимые приложения", platform: "android", developer: "Wasabiapps/IT-Cube", rating: 4.8, downloads: 89000, isNew: false, isPopular: true, productType: "app", downloadUrl: "https://sourcecraft.dev/api/attachments/143260334679959859" },
+            { id: 3, name: "Привет, сосед", description: "Игра-платформер для ПК", price: 0, category: "Игры", platform: "desktop", developer: "Forsyuk.P", rating: 4.6, downloads: 12000, isNew: true, isPopular: false, productType: "app", downloadUrl: "https://disk.yandex.ru/d/_pl7uoi5e0tsOw" },
+            { id: 4, name: "Подкаст", description: "Инструмент для создания аудио подкастов", price: 0, category: "Утилиты", platform: "desktop", developer: "Wasabiapps", rating: 4.3, downloads: 45000, isNew: false, isPopular: true, productType: "app", downloadUrl: "https://disk.yandex.ru/d/XWbRszdlT9QGnA" },
+            { id: 5, name: "Книга Майская ночь", description: "Н.В. Гоголь", price: 0, category: "Книга", platform: "book", developer: "Shchukin.A", rating: 4.7, downloads: 150000, isNew: false, isPopular: true, productType: "book", downloadUrl: "https://disk.yandex.ru/d/ElasctH8eqftGw" },
+            { id: 6, name: "Rustore", description: "Магазин приложений", price: 0, category: "Утилиты", platform: "android", developer: "CodeAcademy", rating: 4.9, downloads: 8000, isNew: true, isPopular: false, productType: "app", downloadUrl: "https://disk.yandex.ru/d/p4QCYslqgwyaNg" },
+            { id: 7, name: "HM песенник", description: "Песенник для гитары", price: 0, category: "Книга", platform: "book", developer: "No name", rating: 4.9, downloads: 8000, isNew: true, isPopular: false, productType: "book", downloadUrl: "https://disk.yandex.ru/d/1BKUsfGT4Z7T1w" },
+            { id: 8, name: "Mario 5", description: "Платформер", price: 0, category: "Игры", platform: "desktop", developer: "Borosdin.G/Shchegolev.L", rating: 4.9, downloads: 8000, isNew: true, isPopular: false, productType: "app", downloadUrl: "https://disk.yandex.ru/d/ucCNzAgAsL5olg" },
+            { id: 9, name: "Journal it plus", description: "Журнал IT+", price: 0, category: "Социально значимые приложения", platform: "android", developer: "Wasabiapps", rating: 4.8, downloads: 89000, isNew: false, isPopular: true, productType: "app", downloadUrl: "https://prostogitara.sourcecraft.site/it/" },
+            { id: 10, name: "Short book", description: "Книга рассказов", price: 0, category: "Книга", platform: "book", developer: "Wasabiapps", rating: 4.8, downloads: 89000, isNew: false, isPopular: true, productType: "book", downloadUrl: "https://disk.yandex.ru/d/u5UFOQ_6dUXTsQ" },
+            { id: 11, name: "Five samples", description: "Учебник с 5 проектами Python", price: 0, category: "Книга", platform: "book", developer: "Wasabiapps", rating: 4.8, downloads: 89000, isNew: false, isPopular: true, productType: "book", downloadUrl: "https://disk.yandex.ru/d/qOuxd_TRzFaIQQ" },
+            { id: 12, name: "Музыка-внутри", description: "Школа музыкальных инструментах", price: 0, category: "Образование", platform: "web", developer: "Wasabiapps", rating: 4.8, downloads: 89000, isNew: false, isPopular: true, productType: "app", downloadUrl: "https://prostogitara.sourcecraft.site/music-inside" },
+            { id: 13, name: "Book-publisher", description: "Создатель книг", price: 0, category: "Образование", platform: "web", developer: "Wasabiapps", rating: 4.8, downloads: 89000, isNew: false, isPopular: true, productType: "site", downloadUrl: "https://prostogitara.sourcecraft.site/book-publisher" },
+            { id: 14, name: "ad-builder", description: "Создатель рекламы", price: 0, category: "Образование", platform: "web", developer: "Wasabiapps", rating: 4.8, downloads: 89000, isNew: false, isPopular: true, productType: "site", downloadUrl: "https://ad-builder.youware.app" },
+            { id: 15, name: "Video-book", description: "Книги с видео", price: 0, category: "Образование", platform: "web", developer: "Wasabiapps", rating: 4.8, downloads: 89000, isNew: false, isPopular: true, productType: "site", downloadUrl: "https://video-book.youware.app" },
+            { id: 16, name: "Web builder", description: "Конструктор сайтов", price: 0, category: "Образование", platform: "web", developer: "Wasabiapps", rating: 4.8, downloads: 89000, isNew: false, isPopular: true, productType: "site", downloadUrl: "https://prostogitara.sourcecraft.site/site-constractor" },
+            { id: 17, name: "Теннис", description: "Игра", price: 0, category: "Игры", platform: "desktop", developer: "Ulya G.", rating: 4.9, downloads: 8000, isNew: true, isPopular: false, productType: "app", downloadUrl: "https://disk.yandex.ru/d/iEHWKFugduvtyw" },
+            { id: 18, name: "Flash", description: "Мессенджер", price: 0, category: "Общение", platform: "android", developer: "Gleb B.", rating: 4.8, downloads: 195000, isNew: false, isPopular: true, productType: "app", downloadUrl: "https://flash.youware.app" },
+            { id: 19, name: "Многостраничный проект", description: "Шаблон", price: 0, category: "Образование", platform: "web", developer: "Ddimasix", rating: 4.8, downloads: 89000, isNew: false, isPopular: true, productType: "site", downloadUrl: "https://ddimasix.sourcecraft.site/sait" },
+            { id: 20, name: "Блог разработчиков", description: "Сайт для статей", price: 0, category: "Образование", platform: "web", developer: "WasabiApps", rating: 4.8, downloads: 89000, isNew: false, isPopular: true, productType: "site", downloadUrl: "https://prostogitara.sourcecraft.site/devblog/" },
+            { id: 21, name: "Приключение пупсика", description: "RPG игра", price: 0, category: "Игры", platform: "desktop", developer: "Forsyuk.P", rating: 4.6, downloads: 12000, isNew: true, isPopular: false, productType: "app", downloadUrl: "https://disk.yandex.ru/d/MV5czLY4tCRYGA" },
+            { id: 22, name: "Кнопка-Сюрприз", description: "Сюрприз", price: 0, category: "Программа", platform: "desktop", developer: "IT-Cube", rating: 4.6, downloads: 12000, isNew: true, isPopular: false, productType: "app", downloadUrl: "https://disk.yandex.ru/d/aBhzeR3ocRKV1Q" },
+            { id: 23, name: "Random-Quiz", description: "Викторина", price: 0, category: "Викторина", platform: "desktop", developer: "Forsyuk.P", rating: 4.6, downloads: 27000, isNew: true, isPopular: false, productType: "app", downloadUrl: "https://disk.yandex.ru/d/8Axs9LqYUAvb5g" },
+            { id: 24, name: "Зефирки", description: "Игра в зефирки", price: 0, category: "Образование", platform: "android", developer: "Evgeniy/WasabiApps", rating: 4.8, downloads: 89000, isNew: false, isPopular: true, productType: "app", downloadUrl: "https://disk.yandex.ru/d/uQuka4zKwLQfNQ" },
+            { id: 25, name: "Новогодняя игра", description: "Новогодняя игра", price: 0, category: "Образование", platform: "android", developer: "Nika/WasabiApps", rating: 4.8, downloads: 89000, isNew: false, isPopular: true, productType: "app", downloadUrl: "https://disk.yandex.ru/d/XHgDw3_RDI8XaQ" },
+            { id: 26, name: "Поймай подарки", description: "Поймай подарки", price: 0, category: "Образование", platform: "android", developer: "Nika/WasabiApps", rating: 4.8, downloads: 89000, isNew: false, isPopular: true, productType: "app", downloadUrl: "https://disk.yandex.ru/d/zWSlPrDK1M8f9Q" },
+            { id: 27, name: "Веесна", description: "Веесна", price: 0, category: "Образование", platform: "web", developer: "Evgeniy/WasabiApps", rating: 4.8, downloads: 89000, isNew: false, isPopular: true, productType: "site", downloadUrl: "https://spring.youware.app/" },
+            { id: 28, name: "Прусов", description: "3D-RPG игра", price: 0, category: "Игры", platform: "desktop", developer: "Evgeniy/WasabiApps", rating: 5.0, downloads: 98513, isNew: true, isPopular: true, productType: "app", downloadUrl: "https://disk.yandex.ru/d/nZjndEau7ycMkQ" },
+            { id: 29, name: "Кыык", description: "RPG игра", price: 0, category: "Игры", platform: "desktop", developer: "Evgeniy/WasabiApps", rating: 5.0, downloads: 96745, isNew: true, isPopular: true, productType: "app", downloadUrl: "https://disk.yandex.ru/d/B6uJCPCyOtJHog" },
+            { id: 30, name: "Программируемый дрон", description: "Игра с Python", price: 0, category: "Образование", platform: "web", developer: "Evgeniy/WasabiApps", rating: 5.0, downloads: 11000, isNew: true, isPopular: true, productType: "site", downloadUrl: "https://sourcecraft.dev/api/attachments/118630629737793032" },
+            { id: 31, name: "Remote gamepad", description: "Геймпад для дрона", price: 0, category: "Утилиты", platform: "desktop", developer: "Evgeniy/WasabiApps", rating: 4.8, downloads: 5300, isNew: true, isPopular: false, productType: "app", downloadUrl: "https://disk.yandex.ru/d/o6AE5p0wC2kOcQ" },
+            { id: 32, name: "Remote gamepad (Android)", description: "Геймпад для дрона", price: 0, category: "Утилиты", platform: "android", developer: "Evgeniy/WasabiApps", rating: 4.8, downloads: 57700, isNew: true, isPopular: false, productType: "app", downloadUrl: "https://disk.yandex.ru/d/6--DJmNcgQeRow" },
+            { id: 33, name: "Термометр", description: "Утилита", price: 0, category: "Утилиты", platform: "desktop", developer: "Evgeniy/WasabiApps", rating: 4.8, downloads: 57700, isNew: true, isPopular: false, productType: "app", downloadUrl: "https://disk.yandex.ru/d/XTGqs4h7jNlz4w" },
+            { id: 34, name: "Уничтожить дрон", description: "Аркада", price: 0, category: "Игры", platform: "web", developer: "WasabiApps", rating: 4.8, downloads: 57700, isNew: true, isPopular: false, productType: "site", downloadUrl: "https://prostogitara.sourcecraft.site/destroy-the-drone-launcher" },
+            { id: 35, name: "Студия интерактивных миров", description: "Конструкторы реальностей", price: 0, category: "Образование", platform: "web", developer: "WasabiApps", rating: 4.8, downloads: 57700, isNew: true, isPopular: false, productType: "site", downloadUrl: "https://prostogitara.sourcecraft.site/creative-portal/" },
+            { id: 36, name: "Установщик с книгой и рекламой", description: "Установщик с рекламой", price: 0, category: "Образование", platform: "desktop", developer: "Глеб Бороздин", rating: 4.8, downloads: 64000, isNew: true, isPopular: false, productType: "app", downloadUrl: "https://sourcecraft.dev/api/attachments/126199721403394840" },
+            { id: 37, name: "Установщик с гимном РФ", description: "Установщик с гимном", price: 0, category: "Образование", platform: "desktop", developer: "Гурин Илья, Белов Кирилл", rating: 4.8, downloads: 64000, isNew: true, isPopular: false, productType: "app", downloadUrl: "https://sourcecraft.dev/api/attachments/126203068877417240" },
+            { id: 38, name: "Космическая Одиссея", description: "Симулятор космоса", price: 0, category: "Образование", platform: "web", developer: "Антонов ИН", rating: 4.8, downloads: 64000, isNew: true, isPopular: false, productType: "site", downloadUrl: "https://prostogitara.sourcecraft.site/space-odyssey/" },
+            { id: 39, name: "Симулятор дрона", description: "Симулятор полёта", price: 0, category: "Образование", platform: "web", developer: "Антонов ИН", rating: 4.8, downloads: 64000, isNew: true, isPopular: false, productType: "site", downloadUrl: "https://prostogitara.sourcecraft.site/drone-project/" },
+            { id: 40, name: "Конструктор рекламы/ad-builder", description: "Реклама приложения в визуализации мобильного телефона", price: 0, category: "Образование", platform: "web", developer: "Антонов ИН", rating: 4.8, downloads: 64000, isNew: true, isPopular: false, productType: "site", downloadUrl: "https://prostogitara.sourcecraft.site/ad-biulder/" },
+            { id: 41, name: "Лаборатория электроники", description: "Учебник для Лаборатории электроники WasabiApps", price: 0, category: "Образование", platform: "web", developer: "Антонов ИН", rating: 4.8, downloads: 64000, isNew: true, isPopular: false, productType: "site", downloadUrl: "https://wasabiapps.sourcecraft.site/elecronics-lab/" },
+            { id: 42, name: "Творческая мастерская", description: "Образовательный проект 'Wasabiapps' для сообщества 'Лицом к миру'", price: 0, category: "Образование", platform: "web", developer: "Антонов ИН", rating: 4.8, downloads: 64000, isNew: true, isPopular: false, productType: "site", downloadUrl: "https://wasabiapps.sourcecraft.site/creative-workshop/" },
+            { id: 43, name: "html редактор", description: "Редактор кода для создания веб станиц на языке html с возможностью просмотра и скачивания результата", price: 0, category: "Образование", platform: "web", developer: "Антонов ИН", rating: 4.8, downloads: 64000, isNew: true, isPopular: false, productType: "site", downloadUrl: "https://wasabiapps.sourcecraft.site/html-editor/" },
+            { id: 44, name: "Конструктор интерфейсов", description: "Конструктор интерфейсов для создания сайтов, приложений и меню запуска сервисов", price: 0, category: "Образование", platform: "web", developer: "Антонов ИН", rating: 4.8, downloads: 64000, isNew: true, isPopular: false, productType: "site", downloadUrl: "https://wasabiapps.sourcecraft.site/interface-constructor" },
+            { id: 45, name: "Конструктор иконок", description: "Конструктор иконок для создания приложений и меню запуска сервисов", price: 0, category: "Образование", platform: "web", developer: "Антонов ИН", rating: 4.8, downloads: 64000, isNew: true, isPopular: false, productType: "site", downloadUrl: "https://prostogitara.sourcecraft.site/icon-constructor" },
+            { id: 101, name: "Гитарная школа", description: "Полное руководство по игре на гитаре", price: 0, category: "Книга", platform: "book", developer: "Антонов И.", rating: 4.9, downloads: 3400, isNew: true, isPopular: true, productType: "book", downloadUrl: "#" },
+            { id: 102, name: "Журнал Music Insider", description: "Ежемесячный журнал о музыке", price: 0, category: "Журнал", platform: "book", developer: "Редакция", rating: 4.7, downloads: 5600, isNew: false, isPopular: true, productType: "book", downloadUrl: "#" },
+            { id: 301, name: "Подкаст: Музыка внутри", description: "Интервью с музыкантами", price: 0, category: "Подкаст", platform: "music", developer: "Антонов И.", rating: 5.0, downloads: 8900, isNew: true, isPopular: true, productType: "music", embedCode: '<iframe style="border-radius:12px; width:100%; height:152px;" src="https://podster.fm/embed/episode/12345" frameborder="0"></iframe>' }
+        ];
+
+        // ==================== ОБЗОРЫ ====================
+        const reviewsData = [
+            { id: 1, title: "Обзор школы Музыка-внутри", videoUrl: "https://runtime.video.cloud.yandex.net/player/video/vplvuxklyrli5qpgmi7h?autoplay=1&mute=0", author: "Антонов ИН", date: "15 марта 2026", excerpt: "Полный обзор проекта Музыка-внутри", fullArticle: "Музыка-внутри - уникальная платформа для оплаты и информации о школе." },
+            { id: 2, title: "Обзор Book publisher", videoUrl: "https://runtime.video.cloud.yandex.net/player/video/vplvam36vnzfpktamczi?autoplay=1&mute=0", author: "Wasabiapps", date: "28 мая 2026", excerpt: "Создание электронной книги", fullArticle: "Пошаговое руководство по созданию электронной книги." },
+            { id: 3, title: "Конструктор сайтов Web builder", videoUrl: "https://runtime.video.cloud.yandex.net/player/video/vplvodq62yiv2s2u4uf3?autoplay=1&mute=0", author: "Wasabiapps", date: "28 мая 2026", excerpt: "Создание сайтов без кода", fullArticle: "Конструктор сайтов от Wasabiapps." },
+            { id: 4, title: "Портал творческих проектов", videoUrl: "https://runtime.video.cloud.yandex.net/player/video/vplv7npfy5k3tj3taylb?autoplay=1&mute=0", author: "Wasabiapps", date: "1 марта 2026", excerpt: "Студия Интерактивных миров", fullArticle: "Портал творческих проектов." },
+            { id: 5, title: "Обзор Web Builder", videoUrl: "https://runtime.video.cloud.yandex.net/player/video/vplvodq62yiv2s2u4uf3?autoplay=1&mute=0", author: "Антонов ИН", date: "25 февраля 2026", excerpt: "Как создать сайт за 10 минут", fullArticle: "Мощный конструктор для лендингов." },
+            { id: 6, title: "Космическая Одиссея", videoUrl: "https://runtime.video.cloud.yandex.net/player/video/vplvbffe5x3gp5y5jix7?autoplay=1&mute=0", author: "Антонов ИН", date: "28 мая 2026", excerpt: "Космический симулятор", fullArticle: "Погружение в космос." },
+            { id: 7, title: "Конструктор рекламы", videoUrl: "https://runtime.video.cloud.yandex.net/player/video/vplvzzwivxeiuzttckx2?autoplay=1&mute=0", author: "Wasabiapps", date: "29 мая 2026", excerpt: "Создание рекламы", fullArticle: "Конструктор рекламы от Wasabiapps." },
+            { id: 8, title: "Установщик с гимном РФ", videoUrl: "https://runtime.video.cloud.yandex.net/player/video/vplvwcxz4knlhtjssi3a?autoplay=0&mute=0", author: "Гурин Илья, Белов Кирилл", date: "28 мая 2026", excerpt: "Установщик с гимном РФ", fullArticle: "Установщик с гимном РФ от Мобильной разработки IT-Куб Углича." },
+            { id: 9, title: "Полеты в симуляторе 18.09", videoUrl: "https://runtime.video.cloud.yandex.net/player/video/vplvzpg7s5zq7ja4thnn?autoplay=0&mute=0", author: "Воробьёв Михаил", date: "18 сентября 2026", excerpt: "Полеты в симуляторе учебного дрона", fullArticle: "Полеты в симуляторе." },
+            { id: 10, title: "Полеты в симуляторе 18.09", videoUrl: "https://runtime.video.cloud.yandex.net/player/video/vplvl5y336tta4tpjks3?autoplay=0&mute=0", author: "Крылов Денис", date: "18 сентября 2026", excerpt: "Полеты в симуляторе учебного дрона", fullArticle: "Полеты в симуляторе." }
+        ];
+
+        // ==================== КОРОТЫШИ ====================
+        const shortsData = [
+            { id: 1, title: "Быстрый старт в WasabiApps", videoUrl: "https://runtime.video.cloud.yandex.net/player/video/vplvuxklyrli5qpgmi7h?autoplay=0&mute=0", author: "Антонов ИН", views: "1.2K", likes: 89 },
+            { id: 2, title: "Как создать сайт за минуту", videoUrl: "https://runtime.video.cloud.yandex.net/player/video/vplvodq62yiv2s2u4uf3?autoplay=0&mute=0", author: "Wasabiapps", views: "3.4K", likes: 210 },
+            { id: 3, title: "Секрет гитарного звука", videoUrl: "https://runtime.video.cloud.yandex.net/player/video/vplvam36vnzfpktamczi?autoplay=0&mute=0", author: "MusicInside", views: "987", likes: 45 },
+            { id: 4, title: "Обзор дрона-симулятора", videoUrl: "https://runtime.video.cloud.yandex.net/player/video/vplvbffe5x3gp5y5jix7?autoplay=0&mute=0", author: "IT-Cube", views: "2.1K", likes: 132 },
+            { id: 5, title: "Звёздный защитник", videoUrl: "https://runtime.video.cloud.yandex.net/player/video/vplvms27pa2emqvqygby?autoplay=0&mute=0", author: "Wasabiapps", views: "5.6K", likes: 344 },
+            { id: 6, title: "Установщик с гимном РФ", videoUrl: "https://runtime.video.cloud.yandex.net/player/video/vplvwcxz4knlhtjssi3a?autoplay=0&mute=0", author: "Гурин Илья, Белов Кирилл", views: "890", likes: 67 }
+        ];
+
+        // ==================== БЛОГ ====================
+        const blogData = [
+            {
+                id: 1,
+                title: "Как мы делали WasabiApps: от идеи до магазина",
+                tag: "Разработка",
+                emoji: "🛠️",
+                author: "Антонов ИН",
+                date: "2 июня 2026",
+                read: "5 мин",
+                excerpt: "История создания платформы: как из учебного проекта вырос полноценный магазин приложений, книг и музыки.",
+                body: `
+                    <p>Идея WasabiApps появилась как учебный проект в IT-Кубе. Сначала это был простой каталог приложений, но со временем он превратился в полноценную экосистему.</p>
+                    <h2>С чего всё началось</h2>
+                    <p>Первая версия содержала всего 5 приложений. Мы хотели показать, что школьники и студенты могут создавать полезные цифровые продукты.</p>
+                    <h2>Что дальше</h2>
+                    <ul>
+                        <li>Добавили раздел книг и журналов</li>
+                        <li>Запустили музыкальные подкасты</li>
+                        <li>Сделали видеообзоры и короткие ролики</li>
+                    </ul>
+                    <p>Сегодня в каталоге более 45 товаров, и мы продолжаем расти.</p>
+                `
+            },
+            {
+                id: 2,
+                title: "Топ-5 приложений для начинающего разработчика",
+                tag: "Подборка",
+                emoji: "📱",
+                author: "Wasabiapps",
+                date: "28 мая 2026",
+                read: "4 мин",
+                excerpt: "Собрали приложения, которые помогут быстрее освоить программирование и сделать первые проекты.",
+                body: `
+                    <p>Мы отобрали пять приложений из нашего магазина, которые особенно полезны новичкам.</p>
+                    <h2>1. Программируемый дрон</h2>
+                    <p>Игра, в которой управление дроном пишется на Python. Отличный способ выучить основы языка.</p>
+                    <h2>2. Html редактор</h2>
+                    <p>Позволяет писать HTML-код и сразу видеть результат в браузере.</p>
+                    <h2>3. Конструктор интерфейсов</h2>
+                    <p>Помогает собрать интерфейс сайта или приложения без глубоких знаний вёрстки.</p>
+                    <h2>4. Конструктор иконок</h2>
+                    <p>Создание иконок для приложений и меню запуска сервисов.</p>
+                    <h2>5. Book publisher</h2>
+                    <p>Инструмент для создания электронных книг — от текста до готового файла.</p>
+                `
+            },
+            {
+                id: 3,
+                title: "Как записать видеообзор: советы от WasabiApps",
+                tag: "Гайд",
+                emoji: "🎬",
+                author: "Антонов ИН",
+                date: "20 мая 2026",
+                read: "6 мин",
+                excerpt: "Практические советы по записи обзоров: свет, звук, сценарий и монтаж — всё, что нужно для качественного видео.",
+                body: `
+                    <p>Хороший обзор — это не только интересный продукт, но и качественная подача.</p>
+                    <h2>Подготовка</h2>
+                    <ul>
+                        <li>Напишите короткий сценарий</li>
+                        <li>Подготовьте продукт к демонстрации</li>
+                        <li>Проверьте свет и звук</li>
+                    </ul>
+                    <h2>Запись</h2>
+                    <p>Говорите спокойно и по делу. Лучше записать несколько дублей, чем потом перезаписывать всё видео.</p>
+                    <h2>Монтаж</h2>
+                    <p>Уберите паузы и лишние кадры, добавьте титры и подписи. Длительность обзора — 3–7 минут.</p>
+                `
+            }
+        ];
+
+        let currentPlatformFilter = "all";
+        let currentTypeFilter = "all";
+        let currentShortIndex = 0;
+        let currentShortsList = [];
+
+        function getPlatformBadge(platform) {
+            const badges = {
+                android: '<span class="badge badge-android"><i class="fab fa-android"></i> Android</span>',
+                desktop: '<span class="badge badge-desktop"><i class="fas fa-desktop"></i> Desktop</span>',
+                web: '<span class="badge badge-web"><i class="fas fa-globe"></i> Web</span>',
+                book: '<span class="badge badge-book"><i class="fas fa-book"></i> Книга</span>',
+                music: '<span class="badge badge-music"><i class="fas fa-headphones"></i> Музыка</span>'
+            };
+            return badges[platform] || '';
+        }
+
+        function renderProducts(products) {
+            const grid = document.getElementById('appsGrid');
+            if (!grid) return;
+            if (products.length === 0) { grid.innerHTML = '<div class="loading">Товары не найдены</div>'; return; }
+            grid.innerHTML = products.map(p => {
+                let listenBtn = '';
+                if (p.productType === 'music' && p.embedCode) {
+                    listenBtn = `<button class="btn btn-music btn-small" onclick="openAudioModal('${p.name.replace(/'/g, "\\'")}', \`${p.embedCode.replace(/`/g, '\\`')}\`)"><i class="fas fa-headphones"></i> Слушать</button>`;
+                }
+                
+                let downloadBtn = p.downloadUrl && p.downloadUrl !== '#' ? 
+                    `<a href="${p.downloadUrl}" class="btn btn-primary btn-small" target="_blank" rel="noopener noreferrer"><i class="fas fa-download"></i> Скачать</a>` :
+                    `<button class="btn btn-primary btn-small" onclick="alert('Ссылка на скачивание: ${p.name}')\"><i class="fas fa-download"></i> Скачать</button>`;
+                
+                return `
+                    <div class="app-card">
+                        <div class="app-header">
+                            <div class="app-title">${p.name} ${getPlatformBadge(p.platform)} ${p.isNew ? '<span class="badge badge-new">NEW</span>' : ''} ${p.isPopular ? '<span class="badge badge-popular">POPULAR</span>' : ''}</div>
+                            <div class="app-price">${p.price === 0 ? 'Бесплатно' : p.price + '₽'}</div>
+                        </div>
+                        <div class="app-description">${p.description}</div>
+                        <div class="app-details">
+                            <div class="app-detail">⭐ ${p.rating}</div>
+                            <div class="app-detail">📥 ${p.downloads.toLocaleString()}</div>
+                            <div class="app-detail">👨‍💻 ${p.developer}</div>
+                        </div>
+                        <div class="app-actions">
+                            ${downloadBtn}
+                            ${listenBtn}
+                            <button class="btn btn-secondary btn-small" onclick="alert('${p.name}\\n${p.description}\\nРазработчик: ${p.developer}\\nРейтинг: ${p.rating}')\"><i class="fas fa-info-circle"></i> Подробнее</button>
+                        </div>
+                        <div style="margin-top:10px;">
+                            <a href="https://sourcecraft.dev/invite/ref_0d7d119c2074e1098be8c104f44466e6" target="_blank" style="text-decoration:none;">
+                                <div style="background:#0d1117;color:#fff;padding:6px 12px;border-radius:8px;font-family:sans-serif;font-size:12px;display:inline-block;">
+                                    <strong>SourceCraft</strong> — присоединяйся →
+                                </div>
+                            </a>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function renderReviews() {
+            const grid = document.getElementById('reviewsGrid');
+            if (!grid) return;
+            grid.innerHTML = reviewsData.map(r => `
+                <div class="review-card" onclick="openVideoPage(${r.id})">
+                    <div class="review-video"><iframe src="${r.videoUrl}" frameborder="0" allowfullscreen></iframe></div>
+                    <div class="review-content">
+                        <div class="review-title">${r.title}</div>
+                        <div class="review-meta"><span><i class="fas fa-user"></i> ${r.author}</span><span><i class="fas fa-calendar"></i> ${r.date}</span></div>
+                        <div class="review-excerpt">${r.excerpt}</div>
+                        <a class="read-more" onclick="event.stopPropagation();alert('${r.fullArticle.replace(/'/g, "\\'")}')\"><i class="fas fa-book-open"></i> Читать полностью</a>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function renderShorts() {
+            const container = document.getElementById('shortsGrid');
+            if (!container) return;
+            container.innerHTML = shortsData.map(short => `
+                <div class="short-card" onclick="openShortPlayer(${short.id})">
+                    <div class="short-video-container">
+                        <iframe src="${short.videoUrl}" frameborder="0" allowfullscreen></iframe>
+                    </div>
+                    <div class="short-info">
+                        <div class="short-title">
+                            <i class="fas fa-play-circle" style="color:#FF5722"></i> ${short.title}
+                            <span class="badge-short">#Shorts</span>
+                        </div>
+                        <div class="short-meta">
+                            <span><i class="fas fa-user"></i> ${short.author}</span>
+                            <span><i class="fas fa-eye"></i> ${short.views}</span>
+                            <span><i class="fas fa-thumbs-up"></i> ${short.likes}</span>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function renderBlog() {
+            const grid = document.getElementById('blogGrid');
+            if (!grid) return;
+            grid.innerHTML = blogData.map(post => `
+                <div class="blog-card" onclick="openBlogPost(${post.id})">
+                    <div class="blog-cover">${post.emoji}</div>
+                    <div class="blog-card-content">
+                        <span class="blog-tag">${post.tag}</span>
+                        <div class="blog-card-title">${post.title}</div>
+                        <div class="blog-card-excerpt">${post.excerpt}</div>
+                        <div class="blog-card-meta">
+                            <span><i class="fas fa-user"></i> ${post.author}</span>
+                            <span><i class="fas fa-calendar"></i> ${post.date}</span>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function openBlogPost(id) {
+            const post = blogData.find(p => Number(p.id) === Number(id));
+            if (!post) return;
+            document.getElementById('blogPostTitle').innerText = post.title;
+            document.getElementById('blogPostAuthor').innerText = post.author;
+            document.getElementById('blogPostDate').innerText = post.date;
+            document.getElementById('blogPostRead').innerText = post.read;
+            document.getElementById('blogPostBody').innerHTML = post.body;
+            document.getElementById('blogPostOverlay').classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeBlogPost() {
+            document.getElementById('blogPostOverlay').classList.remove('active');
+            document.body.style.overflow = '';
+        }
+
+        function openShortPlayer(id) {
+            const index = shortsData.findIndex(s => s.id === id);
+            if (index === -1) return;
+            currentShortIndex = index;
+            currentShortsList = [...shortsData];
+            updateShortPlayer();
+            document.getElementById('shortsPlayerOverlay').classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function updateShortPlayer() {
+            const short = currentShortsList[currentShortIndex];
+            if (!short) return;
+            let videoUrl = short.videoUrl;
+            if (!videoUrl.includes('autoplay=1')) {
+                videoUrl += (videoUrl.includes('?') ? '&autoplay=1' : '?autoplay=1');
+            }
+            document.getElementById('shortsPlayerIframe').src = videoUrl;
+        }
+
+        function nextShort() {
+            if (currentShortsList.length === 0) return;
+            currentShortIndex = (currentShortIndex + 1) % currentShortsList.length;
+            updateShortPlayer();
+        }
+
+        function prevShort() {
+            if (currentShortsList.length === 0) return;
+            currentShortIndex = (currentShortIndex - 1 + currentShortsList.length) % currentShortsList.length;
+            updateShortPlayer();
+        }
+
+        function closeShortPlayer() {
+            document.getElementById('shortsPlayerOverlay').classList.remove('active');
+            document.getElementById('shortsPlayerIframe').src = '';
+            document.body.style.overflow = '';
+        }
+
+        function openVideoPage(id) {
+            const review = reviewsData.find(r => Number(r.id) === Number(id));
+            if (!review) { alert('Видео не найдено'); return; }
+            let videoUrlWithAutoplay = review.videoUrl;
+            if (!videoUrlWithAutoplay.includes('autoplay=1')) {
+                videoUrlWithAutoplay += (videoUrlWithAutoplay.includes('?') ? '&autoplay=1' : '?autoplay=1');
+            }
+            document.getElementById('mainVideoIframe').src = videoUrlWithAutoplay;
+            document.getElementById('videoPageTitle').innerText = review.title;
+            document.getElementById('videoPageAuthor').innerText = review.author;
+            document.getElementById('videoPageDate').innerText = review.date;
+            document.getElementById('videoPageDesc').innerHTML = `<p>${review.fullArticle}</p>`;
+            
+            const recommendations = reviewsData.filter(r => Number(r.id) !== Number(id));
+            document.getElementById('recommendationsList').innerHTML = recommendations.map(rec => {
+                let recVideoUrl = rec.videoUrl.replace('autoplay=1', 'autoplay=0');
+                if (!recVideoUrl.includes('autoplay=0')) recVideoUrl += (recVideoUrl.includes('?') ? '&autoplay=0' : '?autoplay=0');
+                return `<div class="rec-video-card" onclick="openVideoPage(${rec.id})"><div class="rec-thumb"><iframe src="${recVideoUrl}" frameborder="0"></iframe></div><div class="rec-info"><h4>${rec.title}</h4><div class="rec-meta">${rec.author} • ${rec.date}</div></div></div>`;
+            }).join('');
+            document.getElementById('videoPageOverlay').classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeVideoPage() {
+            document.getElementById('mainVideoIframe').src = '';
+            document.getElementById('videoPageOverlay').classList.remove('active');
+            document.body.style.overflow = '';
+        }
+
+        function openAudioModal(title, embedCode) {
+            document.getElementById('modalTitle').innerHTML = `<i class="fas fa-music"></i> ${title}`;
+            document.getElementById('modalBody').innerHTML = `<div class="podster-frame">${embedCode}</div>`;
+            document.getElementById('audioModal').classList.add('active');
+        }
+
+        function closeAudioModal() {
+            document.getElementById('audioModal').classList.remove('active');
+        }
+
+        function showSection(section) {
+            const store = document.getElementById('storeSection');
+            const reviews = document.getElementById('reviewsSection');
+            const shorts = document.getElementById('shortsSection');
+            const blog = document.getElementById('blogSection');
+            const notes = document.getElementById('notesSection');
+            const playlist = document.getElementById('playlistSection');
+            const community = document.getElementById('communitySection');
+
+            store.classList.remove('active');
+            reviews.classList.remove('active');
+            shorts.classList.remove('active');
+            blog.classList.remove('active');
+            if (notes) notes.classList.remove('active');
+            if (playlist) playlist.classList.remove('active');
+            if (community) community.classList.remove('active');
+
+            if (section === 'store') store.classList.add('active');
+            else if (section === 'reviews') { reviews.classList.add('active'); renderReviews(); }
+            else if (section === 'shorts') { shorts.classList.add('active'); renderShorts(); }
+            else if (section === 'blog') { blog.classList.add('active'); renderBlog(); }
+            else if (section === 'notes' && notes) { notes.classList.add('active'); }
+            else if (section === 'playlist' && playlist) { playlist.classList.add('active'); }
+            else if (section === 'community' && community) {
+                community.classList.add('active');
+                if (communityApp.loaded) communityApp.render();
+            }
+        }
+
+        function filterByPlatform(platform) {
+            currentPlatformFilter = platform;
+            document.getElementById('platformFilter').value = platform;
+            applyFilters();
+        }
+
+        function filterByType(type) {
+            currentTypeFilter = type;
+            showSection('store');
+            applyFilters();
+        }
+
+        function applyFilters() {
+            const category = document.getElementById('categoryFilter')?.value || 'all';
+            const platform = document.getElementById('platformFilter')?.value || currentPlatformFilter;
+            const search = document.getElementById('searchFilter')?.value.toLowerCase() || '';
+            
+            let filtered = allProducts.filter(p => {
+                const catMatch = category === 'all' || p.category === category;
+                const platformMatch = platform === 'all' || p.platform === platform;
+                const searchMatch = p.name.toLowerCase().includes(search) || p.description.toLowerCase().includes(search);
+                let typeMatch = true;
+                if (currentTypeFilter === 'app') typeMatch = p.productType === 'app' || p.productType === 'site' || p.productType === 'digital';
+                else if (currentTypeFilter === 'music') typeMatch = p.productType === 'music';
+                else if (currentTypeFilter === 'book') typeMatch = p.productType === 'book';
+                return catMatch && platformMatch && searchMatch && typeMatch;
+            });
+            
+            const sort = document.getElementById('sortFilter')?.value || 'popular';
+            if (sort === 'price_asc') filtered.sort((a, b) => a.price - b.price);
+            else if (sort === 'price_desc') filtered.sort((a, b) => b.price - a.price);
+            else filtered.sort((a, b) => b.rating - a.rating || b.downloads - a.downloads);
+            
+            renderProducts(filtered);
+        }
+
+        function initRotatingBanner(widgetAreaId) {
+            const widgetsList = [
+                `<div class="widget-slide"><div class="music-widget-mini"><div class="icon">🎸</div><div class="text"><h4>Music Inside</h4><p>Уроки, табы, аккорды</p></div><div class="badge-mini">Слушать →</div></div></div>`,
+                `<div class="widget-slide"><div class="guitar-mini"><div class="emoji">🎸✨</div><div class="title-mini">Гитара с душой</div><div class="cta-mini">Открыть →</div></div></div>`,
+                `<div class="widget-slide"><div class="sale-mini"><div class="discount-mini">🔥 -50%</div><div class="offer-mini">Первый урок в подарок</div><div class="arrow">👉</div></div></div>`,
+                `<div class="widget-slide"><div class="simple-mini"><span>🎵</span><span class="simple-text">Музыка внутри тебя — начни играть!</span><span>▶</span></div></div>`,
+                `<div class="widget-slide"><div class="text-mini"><span class="main-text">🎸 PROSTOGITARA</span><span class="btn-mini">Перейти</span></div></div>`
+            ];
+            let idx = 0;
+            const widgetArea = document.getElementById(widgetAreaId);
+            if (!widgetArea) return;
+            function show() { widgetArea.innerHTML = widgetsList[idx % widgetsList.length]; }
+            show();
+            let interval = setInterval(() => { idx++; show(); }, 4000);
+            const bannerLink = widgetArea.closest('.banner-link');
+            if (bannerLink) {
+                bannerLink.addEventListener('mouseenter', () => clearInterval(interval));
+                bannerLink.addEventListener('mouseleave', () => { interval = setInterval(() => { idx++; show(); }, 4000); });
+            }
+        }
+
+        window.showSection = showSection;
+        window.filterByType = filterByType;
+        window.filterByPlatform = filterByPlatform;
+        window.applyFilters = applyFilters;
+        window.openVideoPage = openVideoPage;
+        window.closeVideoPage = closeVideoPage;
+        window.openAudioModal = openAudioModal;
+        window.closeAudioModal = closeAudioModal;
+        window.openShortPlayer = openShortPlayer;
+        window.nextShort = nextShort;
+        window.prevShort = prevShort;
+        window.closeShortPlayer = closeShortPlayer;
+        window.openBlogPost = openBlogPost;
+        window.closeBlogPost = closeBlogPost;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const splash = document.getElementById('splashContainer');
+            const mainApp = document.getElementById('mainApp');
+
+            // Если мы внутри iframe WasabiOS — пропускаем сплэш
+            const isInIframe = window.parent !== window;
+            if (isInIframe) {
+                splash.style.display = 'none';
+                mainApp.style.display = 'block';
+                renderProducts(allProducts);
+                renderReviews();
+                renderShorts();
+                renderBlog();
+                initRotatingBanner('rotatingWidgetsTop');
+                initRotatingBanner('rotatingWidgetsReviews');
+                return;
+            }
+
+            let seconds = 3;
+            const interval = setInterval(() => {
+                seconds--;
+                const cd = document.getElementById('countdown');
+                if (cd) cd.innerText = seconds;
+                if (seconds <= 0) {
+                    clearInterval(interval);
+                    splash.classList.add('hidden');
+                    setTimeout(() => {
+                        splash.style.display = 'none';
+                        mainApp.style.display = 'block';
+                        renderProducts(allProducts);
+                        renderReviews();
+                        renderShorts();
+                        renderBlog();
+                        initRotatingBanner('rotatingWidgetsTop');
+                        initRotatingBanner('rotatingWidgetsReviews');
+                    }, 800);
+                }
+            }, 1000);
+            
+            document.getElementById('skipButton')?.addEventListener('click', () => {
+                clearInterval(interval);
+                splash.classList.add('hidden');
+                setTimeout(() => {
+                    splash.style.display = 'none';
+                    mainApp.style.display = 'block';
+                    renderProducts(allProducts);
+                    renderReviews();
+                    renderShorts();
+                    renderBlog();
+                    initRotatingBanner('rotatingWidgetsTop');
+                    initRotatingBanner('rotatingWidgetsReviews');
+                }, 100);
+            });
+            
+            document.getElementById('closeVideoPageBtn')?.addEventListener('click', closeVideoPage);
+            document.getElementById('closeShortsBtn')?.addEventListener('click', closeShortPlayer);
+            document.getElementById('prevShortBtn')?.addEventListener('click', prevShort);
+            document.getElementById('nextShortBtn')?.addEventListener('click', nextShort);
+            
+            const videoOverlay = document.getElementById('videoPageOverlay');
+            if (videoOverlay) videoOverlay.onclick = (e) => { if (e.target === videoOverlay) closeVideoPage(); };
+
+            const blogOverlay = document.getElementById('blogPostOverlay');
+            if (blogOverlay) blogOverlay.onclick = (e) => { if (e.target === blogOverlay) closeBlogPost(); };
+
+            document.getElementById('postType')?.addEventListener('change', function() {
+                document.getElementById('pollOptionsRow').style.display =
+                    this.value === 'poll' ? 'flex' : 'none';
+            });
+        });
+
+        // ============================================
+        // Приложение "Рабочая тетрадь" (Заметки)
+        // ============================================
+        class NotebookApp {
+            constructor() {
+                this.currentUser = null;
+                this.currentNoteId = null;
+                this.currentAttachments = [];
+                this.searchQuery = '';
+
+                this.supportedFormats = {
+                    images: ['.png', '.jpg', '.jpeg', '.gif', '.bmp', '.tiff', '.webp'],
+                    documents: ['.pdf', '.doc', '.docx', '.txt', '.rtf'],
+                    spreadsheets: ['.xls', '.xlsx', '.csv'],
+                    presentations: ['.ppt', '.pptx'],
+                    archives: ['.zip', '.rar']
+                };
+
+                this.init();
+            }
+
+            init() {
+                this.bindEvents();
+                this.checkAutoLogin();
+            }
+
+            bindEvents() {
+                const loginPass = document.getElementById('loginPassword');
+                if (loginPass) {
+                    loginPass.addEventListener('keypress', (e) => {
+                        if (e.key === 'Enter') this.login();
+                    });
+                }
+                const loginUser = document.getElementById('loginUsername');
+                if (loginUser) {
+                    loginUser.addEventListener('keypress', (e) => {
+                        if (e.key === 'Enter') this.login();
+                    });
+                }
+
+                const noteTitle = document.getElementById('noteTitle');
+                if (noteTitle) noteTitle.addEventListener('input', () => this.autoSave());
+
+                const noteText = document.getElementById('noteText');
+                if (noteText) noteText.addEventListener('input', () => this.autoSave());
+            }
+
+            checkAutoLogin() {
+                const savedUser = localStorage.getItem('notebook_current_user');
+                if (savedUser) {
+                    const users = this.getUsers();
+                    if (users[savedUser]) {
+                        this.currentUser = savedUser;
+                        this.showApp();
+                    }
+                }
+            }
+
+            getUsers() {
+                try {
+                    const data = localStorage.getItem('notebook_users');
+                    return data ? JSON.parse(data) : {};
+                } catch (e) {
+                    console.error('Ошибка загрузки пользователей:', e);
+                    return {};
+                }
+            }
+
+            saveUsers(users) {
+                try {
+                    localStorage.setItem('notebook_users', JSON.stringify(users));
+                    return true;
+                } catch (e) {
+                    console.error('Ошибка сохранения пользователей:', e);
+                    this.showToast('Ошибка сохранения данных', 'error');
+                    return false;
+                }
+            }
+
+            getNotes() {
+                try {
+                    const data = localStorage.getItem('notebook_notes');
+                    return data ? JSON.parse(data) : {};
+                } catch (e) {
+                    console.error('Ошибка загрузки записей:', e);
+                    return {};
+                }
+            }
+
+            saveNotes(notes) {
+                try {
+                    localStorage.setItem('notebook_notes', JSON.stringify(notes));
+                    return true;
+                } catch (e) {
+                    console.error('Ошибка сохранения записей:', e);
+                    this.showToast('Ошибка сохранения записей', 'error');
+                    return false;
+                }
+            }
+
+            getUserNotes() {
+                const allNotes = this.getNotes();
+                return allNotes[this.currentUser] || {};
+            }
+
+            saveUserNotes(userNotes) {
+                const allNotes = this.getNotes();
+                allNotes[this.currentUser] = userNotes;
+                return this.saveNotes(allNotes);
+            }
+
+            login() {
+                const username = document.getElementById('loginUsername').value.trim();
+                const password = document.getElementById('loginPassword').value;
+
+                if (!username) {
+                    this.showToast('Введите ваше имя (логин)', 'error');
+                    return;
+                }
+
+                const users = this.getUsers();
+
+                if (!users[username]) {
+                    users[username] = {
+                        password: password || '',
+                        email: '',
+                        created: new Date().toISOString()
+                    };
+                    this.saveUsers(users);
+
+                    const allNotes = this.getNotes();
+                    if (!allNotes[username]) {
+                        allNotes[username] = {};
+                        this.saveNotes(allNotes);
+                    }
+                } else {
+                    if (users[username].password && users[username].password !== password) {
+                        this.showToast('Неверный пароль', 'error');
+                        return;
+                    }
+                }
+
+                this.currentUser = username;
+                localStorage.setItem('notebook_current_user', username);
+                this.showToast('Добро пожаловать, ' + username + '!', 'success');
+                this.showApp();
+            }
+
+            logout() {
+                if (this.currentNoteId) {
+                    this.saveNote(true);
+                }
+                this.currentUser = null;
+                this.currentNoteId = null;
+                this.currentAttachments = [];
+                localStorage.removeItem('notebook_current_user');
+                this.showAuth();
+                this.showToast('Вы вышли из системы', 'info');
+            }
+
+            showAuth() {
+                document.getElementById('authScreen').style.display = 'flex';
+                document.getElementById('appScreen').classList.remove('active');
+            }
+
+            showApp() {
+                document.getElementById('authScreen').style.display = 'none';
+                document.getElementById('appScreen').classList.add('active');
+                document.getElementById('currentUserDisplay').textContent = '👤 ' + this.currentUser;
+                this.loadNotes();
+            }
+
+            loadNotes() {
+                const userNotes = this.getUserNotes();
+                const notesList = document.getElementById('notesList');
+                notesList.innerHTML = '';
+
+                const sortedNotes = Object.entries(userNotes)
+                    .sort((a, b) => new Date(b[1].created) - new Date(a[1].created));
+
+                if (sortedNotes.length === 0) {
+                    notesList.innerHTML = `
+                        <div class="empty-state" style="color: rgba(255,255,255,0.5);">
+                            <div class="icon">📝</div>
+                            <p>Нет записей</p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                sortedNotes.forEach(([id, note]) => {
+                    if (this.searchQuery) {
+                        const query = this.searchQuery.toLowerCase();
+                        const title = (note.title || '').toLowerCase();
+                        const content = (note.content || '').toLowerCase();
+                        if (!title.includes(query) && !content.includes(query)) {
+                            return;
+                        }
+                    }
+
+                    const item = document.createElement('div');
+                    item.className = 'note-item';
+                    if (id === this.currentNoteId) {
+                        item.classList.add('active');
+                    }
+                    item.textContent = note.title || 'Без названия';
+                    item.onclick = () => this.selectNote(id);
+                    notesList.appendChild(item);
+                });
+
+                if (notesList.children.length === 0) {
+                    notesList.innerHTML = `
+                        <div class="empty-state" style="color: rgba(255,255,255,0.5);">
+                            <div class="icon">🔍</div>
+                            <p>Ничего не найдено</p>
+                        </div>
+                    `;
+                }
+            }
+
+            searchNotes() {
+                this.searchQuery = document.getElementById('searchInput').value;
+                this.loadNotes();
+            }
+
+            selectNote(id) {
+                if (this.currentNoteId && this.currentNoteId !== id) {
+                    this.saveNote(true);
+                }
+
+                const userNotes = this.getUserNotes();
+                const note = userNotes[id];
+
+                if (!note) return;
+
+                this.currentNoteId = id;
+                this.currentAttachments = note.attachments || [];
+
+                document.getElementById('noteTitle').value = note.title || '';
+                document.getElementById('noteText').value = note.content || '';
+
+                this.displayNoteDate(note);
+                this.displayAttachments();
+                this.loadNotes();
+            }
+
+            displayNoteDate(note) {
+                const created = new Date(note.created);
+                const modified = new Date(note.modified);
+
+                const formatDate = (d) => {
+                    return d.toLocaleDateString('ru-RU', {
+                        day: '2-digit',
+                        month: '2-digit',
+                        year: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit'
+                    });
+                };
+
+                document.getElementById('noteDate').textContent =
+                    `Создано: ${formatDate(created)} | Изменено: ${formatDate(modified)} | Автор: ${note.author || this.currentUser}`;
+            }
+
+            createNote() {
+                const userNotes = this.getUserNotes();
+
+                const ids = Object.keys(userNotes).filter(k => /^\d+$/.test(k)).map(Number);
+                const newId = ids.length > 0 ? String(Math.max(...ids) + 1) : '1';
+
+                const now = new Date().toISOString();
+
+                userNotes[newId] = {
+                    title: 'Новая запись',
+                    content: '',
+                    images: [],
+                    attachments: [],
+                    created: now,
+                    modified: now,
+                    tags: [],
+                    author: this.currentUser
+                };
+
+                if (this.saveUserNotes(userNotes)) {
+                    this.currentNoteId = newId;
+                    this.currentAttachments = [];
+
+                    document.getElementById('noteTitle').value = 'Новая запись';
+                    document.getElementById('noteText').value = '';
+                    document.getElementById('noteDate').textContent = '';
+
+                    this.displayAttachments();
+                    this.loadNotes();
+                    this.showToast('Создана новая запись', 'success');
+
+                    document.getElementById('noteTitle').focus();
+                    document.getElementById('noteTitle').select();
+                }
+            }
+
+            deleteNote() {
+                if (!this.currentNoteId) {
+                    this.showToast('Выберите запись для удаления', 'error');
+                    return;
+                }
+
+                if (!confirm('Удалить выбранную запись и все связанные файлы?')) {
+                    return;
+                }
+
+                const userNotes = this.getUserNotes();
+
+                if (userNotes[this.currentNoteId]) {
+                    delete userNotes[this.currentNoteId];
+
+                    if (this.saveUserNotes(userNotes)) {
+                        this.currentNoteId = null;
+                        this.currentAttachments = [];
+
+                        document.getElementById('noteTitle').value = '';
+                        document.getElementById('noteText').value = '';
+                        document.getElementById('noteDate').textContent = '';
+
+                        this.displayAttachments();
+                        this.loadNotes();
+                        this.showToast('Запись удалена', 'success');
+                    }
+                }
+            }
+
+            saveNote(silent = false) {
+                if (!this.currentNoteId) {
+                    if (!silent) this.showToast('Не выбрана запись для сохранения', 'error');
+                    return;
+                }
+
+                const title = document.getElementById('noteTitle').value.trim();
+                const content = document.getElementById('noteText').value;
+
+                if (!title) {
+                    if (!silent) this.showToast('Введите заголовок записи', 'error');
+                    return;
+                }
+
+                const userNotes = this.getUserNotes();
+
+                if (!userNotes[this.currentNoteId]) {
+                    if (!silent) this.showToast('Запись не найдена', 'error');
+                    return;
+                }
+
+                const attachmentsInfo = this.currentAttachments.map(a => ({
+                    filename: a.filename,
+                    type: a.type,
+                    icon: a.icon,
+                    added: a.added,
+                    size: a.size,
+                    data: a.data
+                }));
+
+                userNotes[this.currentNoteId].title = title;
+                userNotes[this.currentNoteId].content = content;
+                userNotes[this.currentNoteId].modified = new Date().toISOString();
+                userNotes[this.currentNoteId].attachments = attachmentsInfo;
+                userNotes[this.currentNoteId].author = this.currentUser;
+
+                if (this.saveUserNotes(userNotes)) {
+                    if (!silent) {
+                        this.showToast('Запись сохранена', 'success');
+                    }
+                    this.loadNotes();
+                    this.displayNoteDate(userNotes[this.currentNoteId]);
+                }
+            }
+
+            autoSave() {
+                clearTimeout(this._autoSaveTimer);
+                this._autoSaveTimer = setTimeout(() => {
+                    if (this.currentNoteId) {
+                        this.saveNote(true);
+                    }
+                }, 2000);
+            }
+
+            getFileType(filename) {
+                const ext = '.' + filename.split('.').pop().toLowerCase();
+
+                for (const [type, extensions] of Object.entries(this.supportedFormats)) {
+                    if (extensions.includes(ext)) {
+                        return type;
+                    }
+                }
+                return 'other';
+            }
+
+            getFileIcon(fileType) {
+                const icons = {
+                    images: '🖼️',
+                    documents: '📄',
+                    spreadsheets: '📊',
+                    presentations: '📑',
+                    archives: '📦',
+                    other: '📎'
+                };
+                return icons[fileType] || '📎';
+            }
+
+            getTypeDisplayName(fileType) {
+                const names = {
+                    images: 'Изображения',
+                    documents: 'Документы',
+                    spreadsheets: 'Таблицы',
+                    presentations: 'Презентации',
+                    archives: 'Архивы',
+                    other: 'Другие файлы'
+                };
+                return names[fileType] || 'Файлы';
+            }
+
+            formatFileSize(bytes) {
+                if (bytes < 1024) return bytes + ' B';
+                if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+                return (bytes / (1024 * 1024)).toFixed(2) + ' MB';
+            }
+
+            addAttachment(acceptTypes = null) {
+                const input = document.getElementById('fileInput');
+
+                if (acceptTypes) {
+                    const extensions = [];
+                    acceptTypes.forEach(type => {
+                        extensions.push(...(this.supportedFormats[type] || []));
+                    });
+                    input.accept = extensions.join(',');
+                } else {
+                    input.accept = '';
+                }
+
+                input.onchange = async (e) => {
+                    const file = e.target.files[0];
+                    if (!file) return;
+
+                    try {
+                        const base64 = await this.readFileAsBase64(file);
+
+                        const fileType = this.getFileType(file.name);
+                        const fileIcon = this.getFileIcon(fileType);
+
+                        const attachment = {
+                            filename: file.name,
+                            type: fileType,
+                            icon: fileIcon,
+                            added: new Date().toISOString(),
+                            size: file.size,
+                            data: base64
+                        };
+
+                        this.currentAttachments.push(attachment);
+                        this.displayAttachments();
+                        this.showToast(`Файл '${file.name}' добавлен`, 'success');
+
+                        this.saveNote(true);
+
+                    } catch (error) {
+                        console.error('Ошибка добавления файла:', error);
+                        this.showToast('Не удалось добавить файл', 'error');
+                    }
+
+                    input.value = '';
+                };
+
+                input.click();
+            }
+
+            readFileAsBase64(file) {
+                return new Promise((resolve, reject) => {
+                    const reader = new FileReader();
+                    reader.onload = () => resolve(reader.result);
+                    reader.onerror = reject;
+                    reader.readAsDataURL(file);
+                });
+            }
+
+            addImage() { this.addAttachment(['images']); }
+            addDocument() { this.addAttachment(['documents']); }
+            addAnyFile() { this.addAttachment(); }
+
+            displayAttachments() {
+                const container = document.getElementById('attachmentsList');
+
+                if (this.currentAttachments.length === 0) {
+                    container.innerHTML = `
+                        <div class="empty-state">
+                            <div class="icon">📭</div>
+                            <p>Нет вложений</p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                const grouped = {};
+                this.currentAttachments.forEach(att => {
+                    if (!grouped[att.type]) grouped[att.type] = [];
+                    grouped[att.type].push(att);
+                });
+
+                let html = '';
+
+                for (const [type, attachments] of Object.entries(grouped)) {
+                    html += `<div class="attachment-group"><h4>${this.getTypeDisplayName(type)}</h4>`;
+
+                    attachments.forEach((att) => {
+                        const globalIndex = this.currentAttachments.indexOf(att);
+                        html += `
+                            <div class="attachment-item">
+                                <span class="icon">${att.icon}</span>
+                                <span class="name">${this.escapeHtml(att.filename)}</span>
+                                <span class="size">${this.formatFileSize(att.size)}</span>
+                                <div class="actions">
+                                    ${att.type === 'images' ?
+                                        `<button class="btn-view" onclick="notebookApp.viewImage(${globalIndex})">👁</button>` : ''}
+                                    <button class="btn-download" onclick="notebookApp.downloadAttachment(${globalIndex})">⬇</button>
+                                    <button class="btn-remove" onclick="notebookApp.removeAttachment(${globalIndex})">✕</button>
+                                </div>
+                            </div>
+                        `;
+                    });
+
+                    html += `</div>`;
+                }
+
+                container.innerHTML = html;
+            }
+
+            viewImage(index) {
+                const att = this.currentAttachments[index];
+                if (!att || att.type !== 'images') return;
+
+                document.getElementById('modalImageTitle').textContent = att.filename;
+                document.getElementById('modalImage').src = att.data;
+                document.getElementById('imageModal').classList.add('active');
+            }
+
+            closeModal() {
+                document.getElementById('imageModal').classList.remove('active');
+            }
+
+            downloadAttachment(index) {
+                const att = this.currentAttachments[index];
+                if (!att) return;
+
+                const link = document.createElement('a');
+                link.href = att.data;
+                link.download = att.filename;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+
+                this.showToast(`Файл '${att.filename}' скачан`, 'success');
+            }
+
+            removeAttachment(index) {
+                const att = this.currentAttachments[index];
+                if (!att) return;
+
+                if (!confirm(`Удалить файл '${att.filename}'?`)) return;
+
+                this.currentAttachments.splice(index, 1);
+                this.displayAttachments();
+                this.saveNote(true);
+                this.showToast('Файл удален', 'success');
+            }
+
+            exportNote() {
+                if (!this.currentNoteId) {
+                    this.showToast('Не выбрана запись для экспорта', 'error');
+                    return;
+                }
+
+                const userNotes = this.getUserNotes();
+                const note = userNotes[this.currentNoteId];
+
+                if (!note) {
+                    this.showToast('Запись не найдена', 'error');
+                    return;
+                }
+
+                let text = 'МЕТАДАННЫЕ:\n';
+                text += '='.repeat(50) + '\n';
+                text += `author: ${note.author || this.currentUser}\n`;
+                text += `created: ${note.created}\n`;
+                text += `modified: ${note.modified}\n`;
+                text += `title: ${note.title}\n`;
+                text += `export_date: ${new Date().toISOString()}\n`;
+                text += '='.repeat(50) + '\n\n';
+                text += 'СОДЕРЖИМОЕ:\n';
+                text += '='.repeat(50) + '\n';
+                text += note.content || '';
+
+                const blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
+                const link = document.createElement('a');
+                link.href = URL.createObjectURL(blob);
+                link.download = `${note.title}.txt`;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                URL.revokeObjectURL(link.href);
+
+                this.showToast('Запись экспортирована', 'success');
+            }
+
+            importNote() {
+                const input = document.createElement('input');
+                input.type = 'file';
+                input.accept = '.txt';
+
+                input.onchange = async (e) => {
+                    const file = e.target.files[0];
+                    if (!file) return;
+
+                    try {
+                        const text = await file.text();
+
+                        const metadata = {};
+                        const lines = text.split('\n');
+                        let inMetadata = false;
+
+                        for (const line of lines) {
+                            if (line.startsWith('='.repeat(50))) {
+                                inMetadata = !inMetadata;
+                                continue;
+                            }
+                            if (inMetadata && line.includes(':')) {
+                                const [key, ...valueParts] = line.split(':');
+                                metadata[key.trim()] = valueParts.join(':').trim();
+                            }
+                        }
+
+                        const userNotes = this.getUserNotes();
+                        const ids = Object.keys(userNotes).filter(k => /^\d+$/.test(k)).map(Number);
+                        const newId = ids.length > 0 ? String(Math.max(...ids) + 1) : '1';
+
+                        const now = new Date().toISOString();
+
+                        userNotes[newId] = {
+                            title: metadata.title || file.name.replace('.txt', ''),
+                            content: text,
+                            images: [],
+                            attachments: [],
+                            created: metadata.created || now,
+                            modified: now,
+                            tags: [],
+                            author: metadata.author || this.currentUser,
+                            source_file: file.name
+                        };
+
+                        if (this.saveUserNotes(userNotes)) {
+                            this.currentNoteId = newId;
+                            this.currentAttachments = [];
+
+                            document.getElementById('noteTitle').value = userNotes[newId].title;
+                            document.getElementById('noteText').value = userNotes[newId].content;
+
+                            this.displayNoteDate(userNotes[newId]);
+                            this.displayAttachments();
+                            this.loadNotes();
+
+                            this.showToast('Запись импортирована', 'success');
+                        }
+
+                    } catch (error) {
+                        console.error('Ошибка импорта:', error);
+                        this.showToast('Не удалось импортировать файл', 'error');
+                    }
+                };
+
+                input.click();
+            }
+
+            exportToDoc() {
+                if (!this.currentNoteId) {
+                    this.showToast('Не выбрана запись для экспорта', 'error');
+                    return;
+                }
+
+                const userNotes = this.getUserNotes();
+                const note = userNotes[this.currentNoteId];
+
+                if (!note) {
+                    this.showToast('Запись не найдена', 'error');
+                    return;
+                }
+
+                const created = new Date(note.created).toLocaleString('ru-RU');
+                const modified = new Date(note.modified).toLocaleString('ru-RU');
+
+                const contentHtml = this.escapeHtml(note.content || '').replace(/\n/g, '<br>');
+                const titleHtml = this.escapeHtml(note.title || 'Без названия');
+                const authorHtml = this.escapeHtml(note.author || this.currentUser);
+
+                let attachmentsHtml = '';
+                if (note.attachments && note.attachments.length > 0) {
+                    attachmentsHtml = '<h2>Вложения</h2><ul>';
+                    note.attachments.forEach(att => {
+                        attachmentsHtml += `<li>${att.icon || '📎'} ${this.escapeHtml(att.filename)} (${this.formatFileSize(att.size)})</li>`;
+                    });
+                    attachmentsHtml += '</ul>';
+                }
+
+                const htmlContent = `
+                    <html xmlns:o="urn:schemas-microsoft-com:office:office"
+                          xmlns:w="urn:schemas-microsoft-com:office:word"
+                          xmlns="http://www.w3.org/TR/REC-html40">
+                    <head>
+                        <meta charset="utf-8">
+                        <title>${titleHtml}</title>
+                        <style>
+                            body { font-family: 'Times New Roman', serif; font-size: 12pt; line-height: 1.5; }
+                            h1 { font-size: 18pt; color: #2c3e50; border-bottom: 2px solid #667eea; padding-bottom: 5px; }
+                            h2 { font-size: 14pt; color: #555; margin-top: 20px; }
+                            .meta { color: #777; font-size: 10pt; margin-bottom: 20px; }
+                            .content { margin-top: 20px; }
+                            ul { margin-left: 20px; }
+                        </style>
+                    </head>
+                    <body>
+                        <h1>${titleHtml}</h1>
+                        <div class="meta">
+                            Автор: ${authorHtml}<br>
+                            Создано: ${created}<br>
+                            Изменено: ${modified}
+                        </div>
+                        <div class="content">${contentHtml}</div>
+                        ${attachmentsHtml}
+                    </body>
+                    </html>
+                `;
+
+                const blob = new Blob(['\ufeff', htmlContent], {
+                    type: 'application/msword;charset=utf-8'
+                });
+
+                const safeTitle = (note.title || 'запись').replace(/[\\/:*?"<>|]/g, '_');
+                this.downloadBlob(blob, `${safeTitle}.doc`);
+                this.showToast('Файл DOC скачан', 'success');
+            }
+
+            exportToPdf() {
+                if (!this.currentNoteId) {
+                    this.showToast('Не выбрана запись для экспорта', 'error');
+                    return;
+                }
+
+                const userNotes = this.getUserNotes();
+                const note = userNotes[this.currentNoteId];
+
+                if (!note) {
+                    this.showToast('Запись не найдена', 'error');
+                    return;
+                }
+
+                if (typeof html2pdf === 'undefined') {
+                    this.showToast('Библиотека PDF не загружена. Проверьте интернет.', 'error');
+                    return;
+                }
+
+                const created = new Date(note.created).toLocaleString('ru-RU');
+                const modified = new Date(note.modified).toLocaleString('ru-RU');
+                const contentHtml = this.escapeHtml(note.content || '').replace(/\n/g, '<br>');
+
+                let attachmentsHtml = '';
+                if (note.attachments && note.attachments.length > 0) {
+                    attachmentsHtml = '<h3 style="margin-top:20px;color:#555;">Вложения</h3><ul>';
+                    note.attachments.forEach(att => {
+                        attachmentsHtml += `<li>${att.icon || '📎'} ${this.escapeHtml(att.filename)} (${this.formatFileSize(att.size)})</li>`;
+                    });
+                    attachmentsHtml += '</ul>';
+                }
+
+                let imagesHtml = '';
+                const images = (note.attachments || []).filter(a => a.type === 'images');
+                if (images.length > 0) {
+                    imagesHtml = '<h3 style="margin-top:20px;color:#555;page-break-before:auto;">Изображения</h3>';
+                    images.forEach(img => {
+                        imagesHtml += `<div style="margin:10px 0;page-break-inside:avoid;"><img src="${img.data}" style="max-width:100%;max-height:400px;border-radius:6px;"><p style="font-size:11px;color:#888;">${this.escapeHtml(img.filename)}</p></div>`;
+                    });
+                }
+
+                const container = document.createElement('div');
+                container.style.padding = '30px';
+                container.style.fontFamily = 'Arial, sans-serif';
+                container.style.color = '#2c3e50';
+                container.style.background = '#fff';
+                container.innerHTML = `
+                    <h1 style="font-size:22px;border-bottom:2px solid #667eea;padding-bottom:8px;">${this.escapeHtml(note.title)}</h1>
+                    <div style="color:#777;font-size:11px;margin:10px 0 20px;">
+                        Автор: ${this.escapeHtml(note.author || this.currentUser)}<br>
+                        Создано: ${created}<br>
+                        Изменено: ${modified}
+                    </div>
+                    <div style="font-size:13px;line-height:1.6;">${contentHtml}</div>
+                    ${attachmentsHtml}
+                    ${imagesHtml}
+                `;
+
+                const safeTitle = (note.title || 'запись').replace(/[\\/:*?"<>|]/g, '_');
+                const options = {
+                    margin: [10, 10, 10, 10],
+                    filename: `${safeTitle}.pdf`,
+                    image: { type: 'jpeg', quality: 0.95 },
+                    html2canvas: { scale: 2, useCORS: true, logging: false },
+                    jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+                };
+
+                this.showToast('Генерация PDF...', 'info');
+
+                html2pdf().set(options).from(container).save()
+                    .then(() => this.showToast('Файл PDF скачан', 'success'))
+                    .catch(err => {
+                        console.error('Ошибка генерации PDF:', err);
+                        this.showToast('Не удалось создать PDF', 'error');
+                    });
+            }
+
+            sendToMessenger() {
+                if (!this.currentNoteId) {
+                    this.showToast('Сначала выберите запись', 'error');
+                    return;
+                }
+
+                const userNotes = this.getUserNotes();
+                const note = userNotes[this.currentNoteId];
+
+                if (!note) {
+                    this.showToast('Запись не найдена', 'error');
+                    return;
+                }
+
+                const created = new Date(note.created).toLocaleString('ru-RU');
+                let message = `📓 ${note.title}\n`;
+                message += `👤 Автор: ${note.author || this.currentUser}\n`;
+                message += `📅 Создано: ${created}\n`;
+                message += `─────────────────\n\n`;
+                message += note.content || '(пусто)';
+
+                if (note.attachments && note.attachments.length > 0) {
+                    message += `\n\n📎 Вложения (${note.attachments.length}):\n`;
+                    note.attachments.forEach(att => {
+                        message += `• ${att.filename} (${this.formatFileSize(att.size)})\n`;
+                    });
+                }
+
+                const copyToClipboard = () => {
+                    if (navigator.clipboard && navigator.clipboard.writeText) {
+                        return navigator.clipboard.writeText(message);
+                    } else {
+                        const ta = document.createElement('textarea');
+                        ta.value = message;
+                        ta.style.position = 'fixed';
+                        ta.style.opacity = '0';
+                        document.body.appendChild(ta);
+                        ta.select();
+                        try { document.execCommand('copy'); } catch(e) {}
+                        document.body.removeChild(ta);
+                        return Promise.resolve();
+                    }
+                };
+
+                copyToClipboard().then(() => {
+                    this.showToast('Текст скопирован в буфер обмена', 'success');
+                    this.openEtoChatbot();
+                }).catch(() => {
+                    this.showToast('Не удалось скопировать текст', 'error');
+                    this.openEtoChatbot();
+                });
+            }
+
+            openEtoChatbot() {
+                if (window.etochatbot && typeof window.etochatbot === 'function') {
+                    try {
+                        window.etochatbot('open');
+                        setTimeout(() => this.showToast('Вставьте текст из буфера (Ctrl+V) в чат', 'info'), 800);
+                        return;
+                    } catch (e) {
+                        console.warn('Не удалось открыть виджет через API:', e);
+                    }
+                }
+
+                const selectors = [
+                    '#etochatbot-widget-button',
+                    '.etochatbot-widget-button',
+                    '[class*="etochatbot"][class*="button"]',
+                    'iframe[src*="etochat"]'
+                ];
+
+                for (const sel of selectors) {
+                    const el = document.querySelector(sel);
+                    if (el) {
+                        el.click();
+                        setTimeout(() => this.showToast('Вставьте текст из буфера (Ctrl+V) в чат', 'info'), 800);
+                        return;
+                    }
+                }
+
+                this.showToast('Ожидание загрузки чата...', 'info');
+                let attempts = 0;
+                const timer = setInterval(() => {
+                    attempts++;
+                    if (window.etochatbot) {
+                        try {
+                            window.etochatbot('open');
+                            clearInterval(timer);
+                            setTimeout(() => this.showToast('Вставьте текст (Ctrl+V) в чат', 'info'), 800);
+                            return;
+                        } catch(e) {}
+                    }
+                    for (const sel of selectors) {
+                        const el = document.querySelector(sel);
+                        if (el) {
+                            el.click();
+                            clearInterval(timer);
+                            setTimeout(() => this.showToast('Вставьте текст (Ctrl+V) в чат', 'info'), 800);
+                            return;
+                        }
+                    }
+                    if (attempts > 20) {
+                        clearInterval(timer);
+                        this.showToast('Не удалось открыть чат. Откройте его вручную.', 'error');
+                    }
+                }, 300);
+            }
+
+            downloadBlob(blob, filename) {
+                const url = URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = filename;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                setTimeout(() => URL.revokeObjectURL(url), 1000);
+            }
+
+            addLink() {
+                const url = prompt('Введите URL:');
+                if (url) {
+                    const textarea = document.getElementById('noteText');
+                    const start = textarea.selectionStart;
+                    const end = textarea.selectionEnd;
+                    const text = textarea.value;
+
+                    const linkText = `[ссылка](${url})`;
+                    textarea.value = text.substring(0, start) + linkText + text.substring(end);
+                    textarea.focus();
+                    textarea.setSelectionRange(start + linkText.length, start + linkText.length);
+
+                    this.autoSave();
+                }
+            }
+
+            escapeHtml(text) {
+                const div = document.createElement('div');
+                div.textContent = text;
+                return div.innerHTML;
+            }
+
+            showToast(message, type = 'info') {
+                document.querySelectorAll('.toast').forEach(t => t.remove());
+
+                const toast = document.createElement('div');
+                toast.className = `toast ${type}`;
+                toast.textContent = message;
+                document.body.appendChild(toast);
+
+                setTimeout(() => {
+                    toast.style.opacity = '0';
+                    toast.style.transition = 'opacity 0.3s';
+                    setTimeout(() => toast.remove(), 300);
+                }, 3000);
+            }
+        }
+
+        const notebookApp = new NotebookApp();
+        window.notebookApp = notebookApp;
+
+        document.getElementById('imageModal').addEventListener('click', (e) => {
+            if (e.target === e.currentTarget) {
+                notebookApp.closeModal();
+            }
+        });
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                notebookApp.closeModal();
+            }
+        });
+
+        /* ==================== СООБЩЕСТВО ==================== */
+        const communityData = {
+            meta: {
+                title: "Сообщество WasabiApps",
+                description: "Новости, обновления, фото и видео от команды",
+                adminPassword: "wasabi2026"
+            },
+            posts: []
+        };
+
+        class CommunityApp {
+            constructor() {
+                this.isAdmin = false;
+                this.filter = "all";
+                this.KEY = "wasabi_community_state";
+                this.loaded = false;
+            }
+
+            async loadFromJson() {
+                try {
+                    const res = await fetch("community.json", { cache: "no-store" });
+                    if (!res.ok) throw new Error("HTTP " + res.status);
+                    const data = await res.json();
+
+                    if (data.meta) communityData.meta = { ...communityData.meta, ...data.meta };
+                    if (Array.isArray(data.posts)) communityData.posts = data.posts;
+
+                    const h2 = document.querySelector(".community-headline h2");
+                    const p = document.querySelector(".community-headline p");
+                    if (h2) h2.textContent = communityData.meta.title;
+                    if (p) p.textContent = communityData.meta.description;
+
+                } catch (e) {
+                    console.warn("Не удалось загрузить community.json:", e);
+                    const feed = document.getElementById("communityFeed");
+                    if (feed) {
+                        feed.innerHTML = `
+                            <div style="grid-column:1/-1;padding:30px;text-align:center;color:#c0392b;background:#fff5f5;border-radius:12px;">
+                                <div style="font-size:2rem;margin-bottom:10px;">⚠️</div>
+                                <p><strong>Не удалось загрузить community.json</strong></p>
+                                <p style="font-size:0.85rem;color:#888;margin-top:8px;">
+                                    Если вы открыли файл напрямую (file://), запустите локальный сервер:<br>
+                                    <code>python -m http.server 8000</code> и откройте <code>http://localhost:8000</code>
+                                </p>
+                            </div>`;
+                    }
+                }
+            }
+
+            loadState() {
+                try {
+                    const raw = localStorage.getItem(this.KEY);
+                    if (!raw) return;
+                    const state = JSON.parse(raw);
+
+                    if (state.likes) {
+                        communityData.posts.forEach(p => {
+                            if (state.likes[p.id] !== undefined) p.liked = state.likes[p.id];
+                        });
+                    }
+                    if (state.saved) {
+                        communityData.posts.forEach(p => {
+                            if (state.saved[p.id] !== undefined) p.saved = state.saved[p.id];
+                        });
+                    }
+                    if (state.pollVotes) {
+                        communityData.posts.forEach(p => {
+                            if (p.poll && state.pollVotes[p.id] !== undefined) {
+                                p.poll.voted = state.pollVotes[p.id];
+                            }
+                        });
+                    }
+                    if (state.comments) {
+                        communityData.posts.forEach(p => {
+                            if (state.comments[p.id]) p.comments = state.comments[p.id];
+                        });
+                    }
+                    if (state.customPosts) {
+                        state.customPosts.forEach(p => communityData.posts.push(p));
+                    }
+                } catch (e) {
+                    console.warn("Не удалось загрузить состояние сообщества:", e);
+                }
+            }
+
+            save() {
+                const state = {
+                    likes: {},
+                    saved: {},
+                    pollVotes: {},
+                    comments: {},
+                    customPosts: communityData.posts.filter(p => p.custom)
+                };
+                communityData.posts.forEach(p => {
+                    state.likes[p.id] = p.liked;
+                    state.saved[p.id] = p.saved;
+                    if (p.poll) state.pollVotes[p.id] = p.poll.voted;
+                    state.comments[p.id] = p.comments;
+                });
+                try {
+                    localStorage.setItem(this.KEY, JSON.stringify(state));
+                } catch (e) {
+                    console.warn("localStorage переполнен или недоступен:", e);
+                }
+            }
+
+            toggleAdmin() {
+                if (this.isAdmin) {
+                    this.isAdmin = false;
+                    document.getElementById("adminPanel").classList.remove("active");
+                    document.getElementById("adminToggleBtn").innerHTML =
+                        '<i class="fas fa-user-shield"></i> Войти как админ';
+                    return;
+                }
+                const pass = prompt("Введите пароль администратора:");
+                if (pass === null) return;
+                if (pass === communityData.meta.adminPassword) {
+                    this.isAdmin = true;
+                    document.getElementById("adminPanel").classList.add("active");
+                    document.getElementById("adminToggleBtn").innerHTML =
+                        '<i class="fas fa-user-check"></i> Выйти из админа';
+                } else {
+                    alert("Неверный пароль");
+                }
+            }
+
+            setFilter(filter, btn) {
+                this.filter = filter;
+                document.querySelectorAll(".cfilter").forEach(b => b.classList.remove("active"));
+                if (btn) btn.classList.add("active");
+                this.render();
+            }
+
+            addPost() {
+                const title = document.getElementById("postTitle").value.trim();
+                const text = document.getElementById("postText").value.trim();
+                const type = document.getElementById("postType").value;
+                const media = document.getElementById("postMedia").value.trim();
+                const tagsRaw = document.getElementById("postTags").value.trim();
+
+                if (!title || !text) {
+                    alert("Заполните заголовок и текст поста");
+                    return;
+                }
+
+                const post = {
+                    id: Date.now(),
+                    author: "WasabiApps",
+                    avatar: "🎮",
+                    date: new Date().toISOString(),
+                    type,
+                    title,
+                    text,
+                    media: media || "",
+                    tags: tagsRaw ? tagsRaw.split(",").map(t => t.trim()).filter(Boolean) : [],
+                    likes: 0,
+                    liked: false,
+                    saved: false,
+                    comments: [],
+                    custom: true
+                };
+
+                if (type === "poll") {
+                    const opts = document.getElementById("pollOptions").value
+                        .split(",").map(o => o.trim()).filter(Boolean);
+                    if (opts.length < 2) {
+                        alert("Для опроса нужно минимум 2 варианта");
+                        return;
+                    }
+                    post.poll = { options: opts.map(o => ({ text: o, votes: 0 })), voted: false };
+                }
+
+                communityData.posts.unshift(post);
+                this.save();
+
+                document.getElementById("postTitle").value = "";
+                document.getElementById("postText").value = "";
+                document.getElementById("postMedia").value = "";
+                document.getElementById("postTags").value = "";
+                document.getElementById("pollOptions").value = "";
+
+                this.render();
+                alert("Пост опубликован! Он сохранён локально (в localStorage).");
+            }
+
+            toggleLike(id) {
+                const p = communityData.posts.find(x => x.id === id);
+                if (!p) return;
+                p.liked = !p.liked;
+                p.likes += p.liked ? 1 : -1;
+                this.save();
+                this.render();
+            }
+
+            toggleSave(id) {
+                const p = communityData.posts.find(x => x.id === id);
+                if (!p) return;
+                p.saved = !p.saved;
+                this.save();
+                this.render();
+            }
+
+            toggleComments(id) {
+                const el = document.getElementById("comments-" + id);
+                if (el) el.classList.toggle("open");
+            }
+
+            addComment(id, inputEl) {
+                const text = inputEl.value.trim();
+                if (!text) return;
+                const p = communityData.posts.find(x => x.id === id);
+                if (!p) return;
+                if (!p.comments) p.comments = [];
+                p.comments.push({ author: "Гость", text });
+                inputEl.value = "";
+                this.save();
+                this.render();
+                const el = document.getElementById("comments-" + id);
+                if (el) el.classList.add("open");
+            }
+
+            votePoll(postId, optionIndex) {
+                const p = communityData.posts.find(x => x.id === postId);
+                if (!p || !p.poll || p.poll.voted) return;
+                p.poll.options[optionIndex].votes++;
+                p.poll.voted = true;
+                this.save();
+                this.render();
+            }
+
+            render() {
+                const feed = document.getElementById("communityFeed");
+                const empty = document.getElementById("communityEmpty");
+                if (!feed) return;
+
+                let posts = communityData.posts;
+                if (this.filter !== "all") {
+                    posts = posts.filter(p => p.type === this.filter);
+                }
+
+                const cstatPosts = document.getElementById("cstatPosts");
+                const cstatLikes = document.getElementById("cstatLikes");
+                const cstatComments = document.getElementById("cstatComments");
+                if (cstatPosts) cstatPosts.textContent = communityData.posts.length;
+                if (cstatLikes) cstatLikes.textContent =
+                    communityData.posts.reduce((s, p) => s + (p.likes || 0), 0);
+                if (cstatComments) cstatComments.textContent =
+                    communityData.posts.reduce((s, p) => s + ((p.comments || []).length), 0);
+
+                if (posts.length === 0) {
+                    feed.innerHTML = "";
+                    if (empty) empty.style.display = "block";
+                    return;
+                }
+                if (empty) empty.style.display = "none";
+
+                feed.innerHTML = posts.map(p => this.renderPost(p)).join("");
+            }
+
+            renderPost(p) {
+                const dateStr = this.formatDate(p.date);
+
+                let mediaHtml = "";
+                if (p.type === "photo" && p.media) {
+                    mediaHtml = `<div class="post-media"><img src="${this.esc(p.media)}" alt="${this.esc(p.title)}" loading="lazy"></div>`;
+                } else if (p.type === "video" && p.media) {
+                    mediaHtml = `<div class="post-media"><iframe src="${this.esc(p.media)}" allow="autoplay; fullscreen; encrypted-media" allowfullscreen></iframe></div>`;
+                }
+
+                let pollHtml = "";
+                if (p.type === "poll" && p.poll) {
+                    const total = p.poll.options.reduce((s, o) => s + o.votes, 0) || 1;
+                    pollHtml = `<div class="poll">` + p.poll.options.map((o, i) => {
+                        const pct = Math.round((o.votes / total) * 100);
+                        return `
+                            <div class="poll-option ${p.poll.voted ? "voted" : ""}"
+                                 onclick="communityApp.votePoll(${p.id}, ${i})">
+                                <div class="poll-bar" style="width:${p.poll.voted ? pct : 0}%"></div>
+                                <span>${this.esc(o.text)} <span class="pct">${p.poll.voted ? pct + "%" : ""}</span></span>
+                            </div>`;
+                    }).join("") + `</div>`;
+                }
+
+                const tagsHtml = p.tags && p.tags.length
+                    ? `<div class="post-tags">${p.tags.map(t => `<span class="post-tag">#${this.esc(t)}</span>`).join("")}</div>`
+                    : "";
+
+                const commentsHtml = (p.comments || []).map(c => `
+                    <div class="comment">
+                        <div class="comment-ava">${this.esc((c.author[0] || "?"))}</div>
+                        <div class="comment-body">
+                            <strong>${this.esc(c.author)}</strong>
+                            <p>${this.esc(c.text)}</p>
+                        </div>
+                    </div>`).join("");
+
+                return `
+                    <div class="post-card">
+                        <div class="post-head">
+                            <div class="post-ava">${this.esc(p.avatar || "👤")}</div>
+                            <div>
+                                <div class="post-author">${this.esc(p.author)}</div>
+                                <div class="post-time">${dateStr}</div>
+                            </div>
+                        </div>
+                        <div class="post-body">
+                            <div class="post-title">${this.esc(p.title)}</div>
+                            <div class="post-text">${this.esc(p.text)}</div>
+                        </div>
+                        ${mediaHtml}
+                        ${pollHtml}
+                        ${tagsHtml}
+                        <div class="post-actions">
+                            <button class="paction ${p.liked ? "liked" : ""}" onclick="communityApp.toggleLike(${p.id})">
+                                <i class="fas fa-heart"></i> ${p.likes || 0}
+                            </button>
+                            <button class="paction" onclick="communityApp.toggleComments(${p.id})">
+                                <i class="fas fa-comment"></i> ${(p.comments || []).length}
+                            </button>
+                            <button class="paction ${p.saved ? "saved" : ""}" onclick="communityApp.toggleSave(${p.id})">
+                                <i class="fas fa-bookmark"></i>
+                            </button>
+                        </div>
+                        <div class="comments" id="comments-${p.id}">
+                            ${commentsHtml}
+                            <div class="comment-form">
+                                <input type="text" placeholder="Написать комментарий..."
+                                       onkeydown="if(event.key==='Enter'){communityApp.addComment(${p.id}, this)}">
+                                <button onclick="communityApp.addComment(${p.id}, this.previousElementSibling)">
+                                    <i class="fas fa-paper-plane"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+
+            formatDate(iso) {
+                try {
+                    const d = new Date(iso);
+                    return d.toLocaleDateString("ru-RU", {
+                        day: "2-digit", month: "long", year: "numeric",
+                        hour: "2-digit", minute: "2-digit"
+                    });
+                } catch (e) { return ""; }
+            }
+
+            esc(s) {
+                if (s === undefined || s === null) return "";
+                return String(s)
+                    .replace(/&/g, "&amp;")
+                    .replace(/</g, "&lt;")
+                    .replace(/>/g, "&gt;")
+                    .replace(/"/g, "&quot;")
+                    .replace(/'/g, "&#039;");
+            }
+
+            async init() {
+                await this.loadFromJson();
+                this.loadState();
+                this.render();
+                this.loaded = true;
+            }
+        }
+
+        const communityApp = new CommunityApp();
+        window.communityApp = communityApp;
+
+        communityApp.init();
+
+        /* ================================================================
+           🌐 ИНТЕГРАЦИЯ С WASABIOS WEB
+           ================================================================ */
+
+        /* ---------- 1. СИНХРОНИЗАЦИЯ ТЕМЫ ---------- */
+        function applyWasabiTheme(theme) {
+            const isDark = theme === 'dark';
+            
+            document.body.style.background = isDark 
+                ? 'linear-gradient(135deg, #1a1a1a 0%, #0f0f0f 100%)' 
+                : 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
+
+            let styleEl = document.getElementById('wasabi-dark-theme');
+            if (isDark) {
+                if (!styleEl) {
+                    styleEl = document.createElement('style');
+                    styleEl.id = 'wasabi-dark-theme';
+                    styleEl.textContent = `
+                        /* Тёмная тема для WasabiApps внутри WasabiOS */
+                        .header,
+                        .hero,
+                        .filters,
+                        .reviews-section,
+                        .shorts-section,
+                        .blog-section,
+                        .community-wrap,
+                        .footer,
+                        #notesSection {
+                            background: #1e1e1e !important;
+                            color: #eee !important;
+                            border: 1px solid #333;
+                        }
+                        .header-content .logo-text { color: #eee !important; }
+                        .hero h1, .section-title { color: #eee !important; }
+                        .hero p { color: #bbb !important; }
+                        .section-title { border-bottom-color: #4CAF50 !important; }
+                        .app-card, .review-card, .short-card, .blog-card, .post-card {
+                            background: #2a2a2a !important;
+                            color: #eee !important;
+                            border: 1px solid #333;
+                        }
+                        .app-title, .review-title, .blog-card-title, .post-title { color: #eee !important; }
+                        .app-description, .review-excerpt, .blog-card-excerpt, .post-text { color: #bbb !important; }
+                        .app-detail, .review-meta, .blog-card-meta, .post-time { color: #999 !important; }
+                        .blog-cover { background: linear-gradient(135deg, #2d2d2d, #1a1a1a) !important; }
+                        .app-price { color: #66bb6a !important; }
+                        select, input, textarea {
+                            background: #333 !important;
+                            color: #eee !important;
+                            border-color: #555 !important;
+                        }
+                        .btn-secondary { background: #444 !important; color: #eee !important; }
+                        .btn-secondary:hover { background: #555 !important; }
+                        .banner-link .widget-area { background: #1e1e1e !important; }
+                        .modal-container { background: #2a2a2a !important; color: #eee !important; }
+                        .modal-body { background: #2a2a2a !important; color: #eee !important; }
+                        .footer .copyright { color: #999 !important; }
+                        .community-cover { background: linear-gradient(135deg, #028090, #014f5a) !important; }
+                        .community-headline h2 { color: #eee !important; }
+                        .admin-panel { background: #2a2a2a !important; border-color: #4CAF50 !important; }
+                        .post-card { background: #2a2a2a !important; }
+                        .post-body, .post-text { color: #bbb !important; }
+                        .comment { border-top-color: #333 !important; }
+                        .comment-body strong { color: #eee !important; }
+                        .comment-body p { color: #bbb !important; }
+                        .comment-form input { background: #333 !important; color: #eee !important; border-color: #555 !important; }
+                        .cfilter { background: #2a2a2a !important; color: #bbb !important; border-color: #444 !important; }
+                        .cfilter.active { background: #00A896 !important; color: white !important; }
+                        .admin-form input, .admin-form textarea, .admin-form select {
+                            background: #333 !important; color: #eee !important; border-color: #555 !important;
+                        }
+                        .short-info { background: linear-gradient(0deg, #0a0a0a, #000) !important; }
+                        #notesSection .auth-box { background: #2a2a2a !important; color: #eee !important; }
+                        #notesSection .auth-box h1 { color: #eee !important; }
+                        #notesSection .auth-box input { background: #333 !important; color: #eee !important; border-color: #555 !important; }
+                        #notesSection .app-container { background: #1a1a1a !important; }
+                        #notesSection .main-content { background: #1a1a1a !important; }
+                        #notesSection .sidebar { background: #0f0f0f !important; }
+                        #notesSection .note-text, #notesSection .note-header input {
+                            background: #2a2a2a !important; color: #eee !important; border-color: #444 !important;
+                        }
+                        #notesSection .attachments-section { background: #2a2a2a !important; border-color: #444 !important; }
+                        #notesSection .attachment-item { background: #333 !important; }
+                        #notesSection .empty-state { color: #888 !important; }
+                        .loading { color: #bbb !important; }
+                        .playlist-hint { color: #bbb !important; }
+                    `;
+                    document.head.appendChild(styleEl);
+                }
+                styleEl.disabled = false;
+            } else {
+                if (styleEl) styleEl.disabled = true;
+            }
+        }
+
+        /* ---------- 2. СИНХРОНИЗАЦИЯ ПОЛЬЗОВАТЕЛЯ ---------- */
+        function applyWasabiUser(username, role) {
+            if (!username) return;
+            
+            let badge = document.getElementById('wasabi-user-badge');
+            if (!badge) {
+                badge = document.createElement('div');
+                badge.id = 'wasabi-user-badge';
+                badge.style.cssText = `
+                    position: fixed;
+                    top: 12px;
+                    right: 12px;
+                    background: #4CAF50;
+                    color: white;
+                    padding: 6px 14px;
+                    border-radius: 20px;
+                    font-size: 12px;
+                    font-weight: 600;
+                    z-index: 99999;
+                    box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+                    font-family: 'Segoe UI', Arial, sans-serif;
+                `;
+                document.body.appendChild(badge);
+            }
+            badge.textContent = '👤 ' + username + (role === 'admin' ? ' (админ)' : '');
+
+            try {
+                if (window.notebookApp) {
+                    const users = window.notebookApp.getUsers();
+                    if (!users[username]) {
+                        users[username] = {
+                            password: '',
+                            email: '',
+                            created: new Date().toISOString()
+                        };
+                        window.notebookApp.saveUsers(users);
+                        const allNotes = window.notebookApp.getNotes();
+                        if (!allNotes[username]) {
+                            allNotes[username] = {};
+                            window.notebookApp.saveNotes(allNotes);
+                        }
+                    }
+                    if (!window.notebookApp.currentUser) {
+                        window.notebookApp.currentUser = username;
+                        localStorage.setItem('notebook_current_user', username);
+                        window.notebookApp.showApp();
+                    }
+                }
+            } catch (e) {
+                console.warn('Не удалось синхронизировать пользователя с заметками:', e);
+            }
+        }
+
+        /* ---------- 3. СЛУШАТЕЛЬ СООБЩЕНИЙ ОТ WASABIOS ---------- */
+        window.addEventListener('message', function (e) {
+            const data = e.data;
+            if (!data || typeof data !== 'object') return;
+
+            if (data.type === 'wasabi-theme') {
+                applyWasabiTheme(data.theme);
+            }
+
+            if (data.type === 'wasabi-user') {
+                applyWasabiUser(data.username, data.role);
+            }
+
+            if (data.type === 'wasabi-navigate') {
+                const section = data.section;
+                if (typeof showSection === 'function') {
+                    showSection(section);
+                }
+            }
+
+            if (data.type === 'wasabi-search') {
+                const searchInput = document.getElementById('searchFilter');
+                if (searchInput) {
+                    searchInput.value = data.query || '';
+                    if (typeof applyFilters === 'function') applyFilters();
+                }
+            }
+        });
+
+        /* ---------- 4. СООБЩАЕМ РОДИТЕЛЮ, ЧТО МЫ ГОТОВЫ ---------- */
+        window.addEventListener('load', function () {
+            if (window.parent !== window) {
+                setTimeout(() => {
+                    window.parent.postMessage({ type: 'wasabi-ready' }, '*');
+                }, 300);
+            }
+        });
+
+        /* ---------- 5. ПЕРЕХВАТ ВНЕШНИХ ССЫЛОК ---------- */
+        document.addEventListener('click', function (e) {
+            const link = e.target.closest('a[target="_blank"]');
+            if (link && window.parent !== window) {
+                e.preventDefault();
+                window.parent.postMessage({
+                    type: 'wasabi-open-url',
+                    url: link.href
+                }, '*');
+            }
+        }, true);
+
+        /* ---------- 6. ПЕРЕХВАТ ALERT (красивее в ОС) ---------- */
+        (function () {
+            if (window.parent === window) return;
+
+            const originalAlert = window.alert;
+            window.alert = function (msg) {
+                window.parent.postMessage({
+                    type: 'wasabi-notify',
+                    message: String(msg)
+                }, '*');
+            };
+        })();
+    </script>
+
+<!-- Yandex.Metrika counter -->
+<script type="text/javascript">
+    (function(m,e,t,r,i,k,a){
+        m[i]=m[i]||function(){(m[i].a=m[i].a||[]).push(arguments)};
+        m[i].l=1*new Date();
+        for (var j = 0; j < document.scripts.length; j++) {if (document.scripts[j].src === r) { return; }}
+        k=e.createElement(t),a=e.getElementsByTagName(t)[0],k.async=1,k.src=r,a.parentNode.insertBefore(k,a)
+    })(window, document,'script','https://mc.yandex.ru/metrika/tag.js?id=109162315', 'ym');
+
+    ym(109162315, 'init', {ssr:true, webvisor:true, clickmap:true, ecommerce:"dataLayer", referrer: document.referrer, url: location.href, accurateTrackBounce:true, trackLinks:true});
+</script>
+<noscript><div><img src="https://mc.yandex.ru/watch/109162315" style="position:absolute; left:-9999px;" alt="" /></div></noscript>
+<!-- /Yandex.Metrika counter -->
+
+<!-- ЭТОЧАТБОТ · онлайн-чат BEGIN -->
+<script>
+(function(w,d){if(w.etochatbot)return;var q=[];w.etochatbot=function(){q.push(arguments)};w.etochatbot.q=q;
+w.etochatbotKey="7c54475ff3d88089df0668f8813ef21072f17ea95a098ea5";
+var s=d.createElement('script');s.async=1;s.src="https://etochat.bot/assets/js/webchat-widget.js?v=2.649.0";
+(d.head||d.body).appendChild(s);})(window,document);
+</script>
+<!-- ЭТОЧАТБОТ · онлайн-чат END -->
+
+</body>
+</html>
